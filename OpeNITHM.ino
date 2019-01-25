@@ -11,7 +11,6 @@
 #include "AirSensor.h"
 #include "Touchboard.h"
 #include <FastLED.h>
-#include <Keyboard.h>
 
 CRGB leds[16];
 
