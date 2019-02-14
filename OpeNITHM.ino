@@ -32,6 +32,8 @@ void onKeyPress(int key, bool wasHeld)
 	keyStates[key] = true;
 }
 
+// Parse configuration command. For now, a serial terminal is required (like the monitor in Arduino IDE)
+// Eventually I will make a config tool
 void parseCommand()
 {
 	char input1 = Serial.read();
@@ -94,21 +96,27 @@ void setup() {
 
 	FastLED.addLeds<LED_TYPE, RGBPIN, LED_ORDER>(leds, 16);
 
+	// Set LEDs blue
 	for (CRGB& led : leds)
 	{
 		led = 0x0000FF;
 		FastLED.show();
 	}
 
+	// Initialize and calibrate touch sensors
 	touchboard = new Touchboard(onKeyPress);
 
+	// Set LEDs red
 	for (CRGB& led : leds)
 	{
 		led = 0xFF0000;
 		FastLED.show();
 	}
 
+	// Initialize air sensor - will automatically calibrate as it starts being read
 	sensor = new AirSensor(500, 50);
+
+	// Initialize relevant output method / USB or serial
 	#ifdef USB
 		output = new USBOutput();
 	#else
@@ -117,6 +125,13 @@ void setup() {
 }
 
 void loop() {
+	// Process config commands
+	if (Serial.available())
+	{
+		parseCommand();
+	}
+
+	// If currently paused through a config command, do not execute main loop
 	if (!activated) return;
 
 	// Scan touch keyboard and update lights
@@ -125,12 +140,15 @@ void loop() {
 	{
 		if (lightIntensity[i] > 0.05f)
 			lightIntensity[i] -= 0.05f;
+
+		// If the key is currently being held, set its color to purple
 		if (touchboard->update(i))
 		{
 			leds[i].setRGB(128 + 127 * lightIntensity[i], 0, 128 + 127 * lightIntensity[i]);
 		}
 		else
 		{
+			// If not, make it yellow and send the "key released" event if it was previously pressed
 			leds[i].setRGB(128, 128, 0);
 			if (keyStates[i])
 			{
@@ -140,6 +158,7 @@ void loop() {
 		}
 	}
 
+	// Process air sensor hand position
 	const float newPosition = sensor->getHandPosition();
 	if (newPosition != sensorPosition)
 	{
@@ -148,13 +167,9 @@ void loop() {
 	}
 
 
-	// If the air sensor is calibrated, begin updating lights. The air sensor will automatically calibrate as it is being polled.
+	// If the air sensor is calibrated, update lights. The lights will stay red as long as the air sensor is not calibrated. 
 	if (sensor->isCalibrated())
 		FastLED.show();
 
-	if (Serial.available())
-	{
-		parseCommand();
-	}
 }
 

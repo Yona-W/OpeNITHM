@@ -2,6 +2,7 @@
 
 void Touchboard::scan()
 {
+	// For each key, set multiplexers and poll both capacitive sensors simultaneously
 	for (int i = 0; i < 8; i++)
 	{
 		digitalWrite(MUX_A, bitRead(i, 0));
@@ -9,6 +10,8 @@ void Touchboard::scan()
 		digitalWrite(MUX_C, bitRead(i, 2));
 
 		unsigned int* values = sensor.sense(3);
+
+		// Store the values received from the sensor poll into their respective positions
 		keys[i] = values[0];
 		keys[i + 8] = values[1];
 	}
@@ -16,6 +19,7 @@ void Touchboard::scan()
 
 void Touchboard::calibrateKeys()
 {
+	// Reset calibration data for all keys
 	for (int i = 0; i < 16; i++)
 	{
 		em_averages[i] = 0;
@@ -24,12 +28,15 @@ void Touchboard::calibrateKeys()
 		keys[i] = false;
 	}
 
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < CALIBRATION_SAMPLES; i++) {
+		// Repeatedly scan all keys
 		scan();
+		// Store the lowest read value as our baseline
 		for (int j = 0; j < 16; j++) {
 			if (keys[j] > neutral_values[j]) neutral_values[j] = keys[j];
 		}
 	}
+	// After calibration is complete, initialize the averages to the baseline values established previously
 	for (int i = 0; i < 16; i++) {
 		em_averages[i] = neutral_values[i];
 	}
@@ -49,8 +56,8 @@ bool Touchboard::update(int key)
 		key_states[key] = false;
 	}
 	else
-		//If we are outside of the deadzone:
 	{
+		//If we are outside of the deadzone:
 		if (read_value > em_averages[key] + threshold)
 		{
 			// If we just detected a touch, make the key touched, discard the previous moving average and trigger the callback.

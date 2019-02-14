@@ -5,6 +5,7 @@
  http://playground.arduino.cc/Main/CapacitiveSensor
  Copyright (c) 2009 Paul Bagder
  Updates for other hardare by Paul Stoffregen, 2010-2016
+ Several modifications to better suit OpeNITHM by Jonathan Montineri, 2019
  vim: set ts=4:
 
  Permission is hereby granted, free of charge, to any person obtaining a
@@ -43,12 +44,10 @@ CapacitiveSensor::CapacitiveSensor(uint8_t sendPin, uint8_t receivePin1, uint8_t
 {
 	// initialize this instance's variables
 	error = 1;
+	retVal = new unsigned int[2];
+
 	loopTimingFactor = 310;		// determined empirically -  a hack
-
 	CS_Timeout_Millis = (200 * (float)loopTimingFactor * (float)F_CPU) / 16000000;
-
-	// Serial.print("timwOut =  ");
-	// Serial.println(CS_Timeout_Millis);
 
 	// get pin mapping and port for send Pin - from PinMode function in core
 
@@ -57,20 +56,21 @@ CapacitiveSensor::CapacitiveSensor(uint8_t sendPin, uint8_t receivePin1, uint8_t
 	if (receivePin1 >= NUM_DIGITAL_PINS) error = -1;
 	if (receivePin2 >= NUM_DIGITAL_PINS) error = -1;
 #endif
-	pinMode(sendPin, OUTPUT);						// sendpin to OUTPUT
-	pinMode(receivePin1, INPUT);						// receivePin to INPUT
-	pinMode(receivePin2, INPUT);						// receivePin to INPUT
 
-	sBit = PIN_TO_BITMASK(sendPin);					// get send pin's ports and bitmask
-	sReg = PIN_TO_BASEREG(sendPin);					// get pointer to output register
+	pinMode(sendPin, OUTPUT);						// sendpin to OUTPUT
+	pinMode(receivePin1, INPUT);						// receivePins to INPUT
+	pinMode(receivePin2, INPUT);
+
+	// Get pin bitmask and registers
+
+	sBit = PIN_TO_BITMASK(sendPin);	
+	sReg = PIN_TO_BASEREG(sendPin);
 
 	r1Bit = PIN_TO_BITMASK(receivePin1);
 	r1Reg = PIN_TO_BASEREG(receivePin1);
 
 	r2Bit = PIN_TO_BITMASK(receivePin2);
 	r2Reg = PIN_TO_BASEREG(receivePin2);
-
-	retVal = new unsigned int[2];
 }
 
 // Public Methods //////////////////////////////////////////////////////////////
@@ -81,17 +81,18 @@ unsigned int* CapacitiveSensor::sense(uint8_t samples)
 	total1 = 0;
 	total2 = 0;
 
+	// This code has very strict timing - disable interrupts
 	noInterrupts();
 	for (uint8_t i = 0; i < samples; i++) {
-		if (!SenseOneCycle())  return nullptr;   // variable over timeout
+		if (!SenseOneCycle())  return nullptr;   // Poll capacitive sensors repeatedly
 	}
 	interrupts();
 
 	retVal[0] = total1;
 	retVal[1] = total2;
 
+	// Return the pair of values for the 2 sensors that were polled
 	return retVal;
-
 }
 
 // Private Methods /////////////////////////////////////////////////////////////
@@ -101,34 +102,35 @@ int CapacitiveSensor::SenseOneCycle(void)
 {
 
 	DIRECT_WRITE_LOW(sReg, sBit);	// sendPin Register low
-	DIRECT_MODE_INPUT(r1Reg, r1Bit);	// r1eceivePin to input (pullups ar1e off)
-	DIRECT_MODE_OUTPUT(r1Reg, r1Bit); // r1eceivePin to OUTPUT
+	DIRECT_MODE_INPUT(r1Reg, r1Bit);	// receivePin to input (pullups ar1e off)
+	DIRECT_MODE_OUTPUT(r1Reg, r1Bit); // receivePin to OUTPUT
 	DIRECT_WRITE_LOW(r1Reg, r1Bit);	// pin is now LOW AND OUTPUT
 	delayMicroseconds(10);
-	DIRECT_MODE_INPUT(r1Reg, r1Bit);	// r1eceivePin to input (pullups ar1e off)
+	DIRECT_MODE_INPUT(r1Reg, r1Bit);	// receivePin to input (pullups ar1e off)
 
-	DIRECT_MODE_INPUT(r2Reg, r2Bit);	// r2eceivePin to input (pullups ar2e off)
-	DIRECT_MODE_OUTPUT(r2Reg, r2Bit); // r2eceivePin to OUTPUT
+	DIRECT_MODE_INPUT(r2Reg, r2Bit);	// receivePin to input (pullups ar2e off)
+	DIRECT_MODE_OUTPUT(r2Reg, r2Bit); // receivePin to OUTPUT
 	DIRECT_WRITE_LOW(r2Reg, r2Bit);	// pin is now LOW AND OUTPUT
 	delayMicroseconds(10);
-	DIRECT_MODE_INPUT(r2Reg, r2Bit);	// r2eceivePin to input (pullups ar2e off)
+	DIRECT_MODE_INPUT(r2Reg, r2Bit);	// receivePin to input (pullups ar2e off)
 	DIRECT_WRITE_HIGH(sReg, sBit);	// sendPin High
 
-	while ((total1 < CS_Timeout_Millis)) {  // while total is positive value
+	while (total1 < CS_Timeout_Millis) {  // while total is positive value
+		// Poll both pins at once
 		pin1State = DIRECT_READ(r1Reg, r1Bit);
 		pin2State = DIRECT_READ(r2Reg, r2Bit);
 
 		total1 += !pin1State;
 		total2 += !pin2State;
 
+		// Break once both pins are high
 		if(pin1State && pin2State) break;
 	}
-	//Serial.print("SenseOneCycle(1): ");
-	//Serial.println(total);
 
 	if (total1 > CS_Timeout_Millis) {
-		return -2;         //  total variable over timeout
+		return -2;         // We timed out - should never happen with this implementation
 	}
+
 	// set receive pin HIGH briefly to charge up fully - because the while loop above will exit when pin is ~ 2.5V
 	DIRECT_WRITE_HIGH(r1Reg, r1Bit);
 	DIRECT_MODE_OUTPUT(r1Reg, r1Bit);  // receivePin to OUTPUT - pin is now HIGH AND OUTPUT
@@ -139,7 +141,8 @@ int CapacitiveSensor::SenseOneCycle(void)
 	DIRECT_MODE_INPUT(r2Reg, r2Bit);	// receivePin to INPUT (pullup is off)
 	DIRECT_WRITE_LOW(sReg, sBit);	// sendPin LOW
 
-	while ( (total1 < CS_Timeout_Millis) ) {  // while receive pin is HIGH  AND total is less than timeout
+	// Same loop as above, but measuring capacitor discharge time instead
+	while ( (total1 < CS_Timeout_Millis) ) {  
 		pin1State = DIRECT_READ(r1Reg, r1Bit);
 		pin2State = DIRECT_READ(r2Reg, r2Bit);
 
@@ -148,10 +151,9 @@ int CapacitiveSensor::SenseOneCycle(void)
 
 		if(!(pin1State || pin2State)) break;
 	}
-	//Serial.print("SenseOneCycle(2): ");
-	//Serial.println(total);
+
 	if (total1 >= CS_Timeout_Millis) {
-		return -2;     // total variable over timeout
+		return -2;    
 	} else {
 		return 1;
 	}

@@ -12,8 +12,9 @@
 #include "PinConfig.h"
 #include <EEPROM.h>
 
-#define AIR_SENSOR_THRESHOLD_SUBTRACT 5
-#define EMA_AIRSENSOR_ALPHA 0.4f
+#ifndef IR_SENSOR_MULTIPLEXED
+	int ir_sensor_pins[6] = {AIR_SENSOR_0_PIN, AIR_SENSOR_1_PIN, AIR_SENSOR_2_PIN, AIR_SENSOR_3_PIN, AIR_SENSOR_4_PIN, AIR_SENSOR_5_PIN};
+#endif
 
 class AirSensor
 {
