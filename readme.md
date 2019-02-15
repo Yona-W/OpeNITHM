@@ -1,5 +1,5 @@
 # OpeNITHM
 
-This repository is for the firmware of OpeNITHM. This readme will be updated with links to resources, instructions and other relevant information as the project nears completion.
+This repository contails files related to OpeNITHM.
 
-In the meantime, you can browse the [Project Files](https://drive.google.com/open?id=13EOi3ONAabND2K3P6B_jKoXaEpfQZMc9) as I work on them.
+Firmware and schematic files can be found in this repository. Early CAD files and partial build instructions are located [here](https://drive.google.com/open?id=13EOi3ONAabND2K3P6B_jKoXaEpfQZMc9) and will slowly be migrated to this repository as they are finalized.
