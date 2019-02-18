@@ -37,61 +37,69 @@ void onKeyPress(int key, bool wasHeld)
 void parseCommand()
 {
 	char input1 = Serial.read();
+	while(!Serial.available());
 	char input2 = Serial.read();
 	switch (input1)
 	{
-	case 't':
+	case 't': // touchboard
+		while(!Serial.available());
 		switch (input2)
 		{
-		case 't':
+		case 't': // threshold
 			touchboard->setThreshold(Serial.parseInt());
 			break;
-		case 'd':
+		case 'd': // dead zone
 			touchboard->setDeadzone(Serial.parseInt());
 			break;
-		case 'a':
+		case 'a': // alpha
 			touchboard->setAlpha(Serial.parseFloat());
 			break;
-		case 'c':
+		case 'c': // calibrate
 			touchboard->calibrateKeys();
 		}
 		break;
-	case 'i':
+	case 'i': // ir sensors
+		while(!Serial.available());
 		switch (input2)
 		{
-		case 'd':
+		case 'd': // dead zone
 			sensor->setDeadzone(Serial.parseInt());
 			break;
-		case 'a':
+		case 'a': // alpha
 			sensor->setAlpha(Serial.parseFloat());
 			break;
-		case 'c':
+		case 'c': // calibrate
 			sensor->recalibrate();
 		}
 		break;
-	case 'p':
+	case 'p': // pause
 		activated = false;
 		break;
-	case 'r':
+	case 'r': // resume
 		activated = true;
 		break;
+	case 'g': // print values
+		Serial.print("tt \t");
+		Serial.println(touchboard->getThreshold());
+		Serial.print("td \t");
+		Serial.println(touchboard->getDeadzone());
+		Serial.print("ta \t");
+		Serial.println(touchboard->getAlpha());
+		Serial.print("id \t");
+		Serial.println(sensor->getDeadzone());
+		Serial.print("ia \t");
+		Serial.println(sensor->getAlpha());
+		Serial.print(";");
+		break;
+	case 'a': // check if activated
+		Serial.println(activated);
+		Serial.print(";");
+		break;
 	}
-
-	Serial.print("tt \t");
-	Serial.println(touchboard->getThreshold());
-	Serial.print("td \t");
-	Serial.println(touchboard->getDeadzone());
-	Serial.print("ta \t");
-	Serial.println(touchboard->getAlpha());
-	Serial.print("id \t");
-	Serial.println(sensor->getDeadzone());
-	Serial.print("ia \t");
-	Serial.println(sensor->getAlpha());
-	Serial.print(";");
 }
 
 void setup() {
-	Serial.begin(112500);
+	Serial.begin(115200);
 	command = malloc(32);
 
 	FastLED.addLeds<LED_TYPE, RGBPIN, LED_ORDER>(leds, 16);
