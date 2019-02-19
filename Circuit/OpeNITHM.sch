@@ -330,6 +330,8 @@ Wire Wire Line
 Wire Wire Line
 	9100 1200 9100 1450
 Wire Wire Line
+	9300 1200 9300 1450
+Wire Wire Line
 	9500 1200 9500 1450
 Wire Wire Line
 	8100 1750 8100 2000
@@ -366,6 +368,8 @@ Text Label 6100 2400 0    50   ~ 0
 MUX_2
 Text Label 6100 2100 0    50   ~ 0
 RECEIVE_2
+Wire Wire Line
+	5900 1200 8100 1200
 Connection ~ 5900 1200
 Connection ~ 8100 1200
 Wire Wire Line
@@ -1590,7 +1594,11 @@ Wire Wire Line
 Wire Wire Line
 	3050 2550 3050 2500
 Wire Notes Line
-	10200 3100 10200 800 
+	2350 800  9800 800 
+Wire Notes Line
+	9800 3100 9800 800 
+Wire Notes Line
+	9800 3100 2350 3100
 Wire Notes Line
 	2350 3100 2350 800 
 Wire Notes Line
@@ -1907,28 +1915,4 @@ Wire Notes Line
 	6600 5050 2350 5050
 Wire Notes Line
 	2350 3250 6600 3250
-Wire Wire Line
-	5900 1200 8100 1200
-Wire Wire Line
-	9300 1200 9300 1450
-Connection ~ 9500 1200
-Wire Notes Line
-	2350 800  10200 800 
-Wire Notes Line
-	2350 3100 10200 3100
-Wire Wire Line
-	9850 1200 9850 1500
-Wire Wire Line
-	9500 1200 9850 1200
-$Comp
-L Connector:TestPoint TP27
-U 1 1 5C685989
-P 9850 1500
-F 0 "TP27" H 9850 1756 50  0000 C TNN
-F 1 "Guard" H 9792 1618 50  0000 R CNN
-F 2 "Connector_Wire:SolderWirePad_1x01_Drill1mm" H 10050 1500 50  0001 C CNN
-F 3 "~" H 10050 1500 50  0001 C CNN
-	1    9850 1500
-	-1   0    0    1   
-$EndComp
 $EndSCHEMATC
