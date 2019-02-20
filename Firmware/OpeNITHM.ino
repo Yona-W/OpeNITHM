@@ -40,11 +40,12 @@ void onKeyPress(int key, bool wasHeld)
 void parseCommand()
 {
 	char input1 = Serial.read();
-	while(!Serial.available());
-	char input2 = Serial.read();
+	char input2;
 	switch (input1)
 	{
 	case 't': // touchboard
+		while(!Serial.available());
+		input2 = Serial.read();
 		while(!Serial.available());
 		switch (input2)
 		{
@@ -62,6 +63,8 @@ void parseCommand()
 		}
 		break;
 	case 'i': // ir sensors
+		while(!Serial.available());
+		input2 = Serial.read();
 		while(!Serial.available());
 		switch (input2)
 		{
@@ -111,6 +114,8 @@ void parseCommand()
 		Serial.print(";");
 		break;
 	case 'l': // change led color
+		while(!Serial.available());
+		input2 = Serial.read();
 		while(!Serial.available());
 		switch (input2)
 		{
