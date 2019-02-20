@@ -14,6 +14,9 @@
 
 CRGB leds[16];
 
+CRGB led_on = 0xFF00FF; // purple
+CRGB led_off = 0xFFFF00; // yellow
+
 float lightIntensity[16];
 bool keyStates[16];
 bool activated = true;
@@ -89,11 +92,63 @@ void parseCommand()
 		Serial.println(sensor->getDeadzone());
 		Serial.print("ia \t");
 		Serial.println(sensor->getAlpha());
+		Serial.print("lor \t");
+		Serial.println(led_on.r);
+		Serial.print("log \t");
+		Serial.println(led_on.g);
+		Serial.print("lob \t");
+		Serial.println(led_on.b);
+		Serial.print("lfr \t");
+		Serial.println(led_off.r);
+		Serial.print("lfg \t");
+		Serial.println(led_off.g);
+		Serial.print("lfb \t");
+		Serial.println(led_off.b);
 		Serial.print(";");
 		break;
 	case 'a': // check if activated
 		Serial.println(activated);
 		Serial.print(";");
+		break;
+	case 'l': // change led color
+		while(!Serial.available());
+		switch (input2)
+		{
+		case 'o': // on
+			while(!Serial.available());
+			switch ((char)Serial.read())
+			{
+			case 'r': // red
+				led_on.r = Serial.parseInt(); // for now this has to be expressed in decimal
+				break;
+			case 'g': // green
+				led_on.g = Serial.parseInt();
+				break;
+			case 'b': // blue
+				led_on.b = Serial.parseInt();
+				break;
+			case 'e': // everything
+				led_on = Serial.parseInt();
+			}
+			break;
+		case 'f': // off
+			while(!Serial.available());
+			switch ((char)Serial.read())
+			{
+			case 'r': // red
+				led_off.r = Serial.parseInt(); // for now this has to be expressed in decimal
+				break;
+			case 'g': // green
+				led_off.g = Serial.parseInt();
+				break;
+			case 'b': // blue
+				led_off.b = Serial.parseInt();
+				break;
+			case 'e': // everything
+				led_off = Serial.parseInt();
+			}
+			break;
+		}
 		break;
 	}
 }
@@ -152,12 +207,12 @@ void loop() {
 		// If the key is currently being held, set its color to purple
 		if (touchboard->update(i))
 		{
-			leds[i].setRGB(128 + 127 * lightIntensity[i], 0, 128 + 127 * lightIntensity[i]);
+			leds[i].setRGB(min(led_on.r / 2 + led_on.r / 2 * lightIntensity[i], 255), min(led_on.g / 2 + led_on.g / 2 * lightIntensity[i], 255), min(led_on.b / 2 + led_on.b / 2 * lightIntensity[i], 255));
 		}
 		else
 		{
 			// If not, make it yellow and send the "key released" event if it was previously pressed
-			leds[i].setRGB(128, 128, 0);
+			leds[i].setRGB(led_off.r/2, led_off.g/2, led_off.b/2);
 			if (keyStates[i])
 			{
 				output->sendKeyEvent(i, false, false);
@@ -178,6 +233,4 @@ void loop() {
 	// If the air sensor is calibrated, update lights. The lights will stay red as long as the air sensor is not calibrated. 
 	if (sensor->isCalibrated())
 		FastLED.show();
-
 }
-
