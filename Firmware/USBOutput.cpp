@@ -1,6 +1,4 @@
-// 
-// 
-// 
+#ifdef USB
 
 #include "USBOutput.h"
 
@@ -50,3 +48,4 @@ USBOutput::USBOutput(){
   lastPosition = 0;
 }
 
+#endif
