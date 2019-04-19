@@ -132,55 +132,55 @@
 static inline __attribute__((always_inline))
 IO_REG_TYPE directRead(volatile IO_REG_TYPE *base, IO_REG_TYPE pin)
 {
-    IO_REG_TYPE ret;
-    if (SS_GPIO == GPIO_TYPE(pin)) {
-        ret = READ_ARC_REG(((IO_REG_TYPE)base + EXT_PORT_OFFSET_SS));
-    } else {
-        ret = MMIO_REG_VAL_FROM_BASE((IO_REG_TYPE)base, EXT_PORT_OFFSET_SOC);
-    }
-    return ((ret >> GPIO_ID(pin)) & 0x01);
+  IO_REG_TYPE ret;
+  if (SS_GPIO == GPIO_TYPE(pin)) {
+    ret = READ_ARC_REG(((IO_REG_TYPE)base + EXT_PORT_OFFSET_SS));
+  } else {
+    ret = MMIO_REG_VAL_FROM_BASE((IO_REG_TYPE)base, EXT_PORT_OFFSET_SOC);
+  }
+  return ((ret >> GPIO_ID(pin)) & 0x01);
 }
 
 static inline __attribute__((always_inline))
 void directModeInput(volatile IO_REG_TYPE *base, IO_REG_TYPE pin)
 {
-    if (SS_GPIO == GPIO_TYPE(pin)) {
-        WRITE_ARC_REG(READ_ARC_REG((((IO_REG_TYPE)base) + DIR_OFFSET_SS)) & ~(0x01 << GPIO_ID(pin)),
-      ((IO_REG_TYPE)(base) + DIR_OFFSET_SS));
-    } else {
-        MMIO_REG_VAL_FROM_BASE((IO_REG_TYPE)base, DIR_OFFSET_SOC) &= ~(0x01 << GPIO_ID(pin));
-    }
+  if (SS_GPIO == GPIO_TYPE(pin)) {
+    WRITE_ARC_REG(READ_ARC_REG((((IO_REG_TYPE)base) + DIR_OFFSET_SS)) & ~(0x01 << GPIO_ID(pin)),
+                  ((IO_REG_TYPE)(base) + DIR_OFFSET_SS));
+  } else {
+    MMIO_REG_VAL_FROM_BASE((IO_REG_TYPE)base, DIR_OFFSET_SOC) &= ~(0x01 << GPIO_ID(pin));
+  }
 }
 
 static inline __attribute__((always_inline))
 void directModeOutput(volatile IO_REG_TYPE *base, IO_REG_TYPE pin)
 {
-    if (SS_GPIO == GPIO_TYPE(pin)) {
-        WRITE_ARC_REG(READ_ARC_REG(((IO_REG_TYPE)(base) + DIR_OFFSET_SS)) | (0x01 << GPIO_ID(pin)),
-      ((IO_REG_TYPE)(base) + DIR_OFFSET_SS));
-    } else {
-        MMIO_REG_VAL_FROM_BASE((IO_REG_TYPE)base, DIR_OFFSET_SOC) |= (0x01 << GPIO_ID(pin));
-    }
+  if (SS_GPIO == GPIO_TYPE(pin)) {
+    WRITE_ARC_REG(READ_ARC_REG(((IO_REG_TYPE)(base) + DIR_OFFSET_SS)) | (0x01 << GPIO_ID(pin)),
+                  ((IO_REG_TYPE)(base) + DIR_OFFSET_SS));
+  } else {
+    MMIO_REG_VAL_FROM_BASE((IO_REG_TYPE)base, DIR_OFFSET_SOC) |= (0x01 << GPIO_ID(pin));
+  }
 }
 
 static inline __attribute__((always_inline))
 void directWriteLow(volatile IO_REG_TYPE *base, IO_REG_TYPE pin)
 {
-    if (SS_GPIO == GPIO_TYPE(pin)) {
-        WRITE_ARC_REG(READ_ARC_REG(base) & ~(0x01 << GPIO_ID(pin)), base);
-    } else {
-        MMIO_REG_VAL(base) &= ~(0x01 << GPIO_ID(pin));
-    }
+  if (SS_GPIO == GPIO_TYPE(pin)) {
+    WRITE_ARC_REG(READ_ARC_REG(base) & ~(0x01 << GPIO_ID(pin)), base);
+  } else {
+    MMIO_REG_VAL(base) &= ~(0x01 << GPIO_ID(pin));
+  }
 }
 
 static inline __attribute__((always_inline))
 void directWriteHigh(volatile IO_REG_TYPE *base, IO_REG_TYPE pin)
 {
-    if (SS_GPIO == GPIO_TYPE(pin)) {
-        WRITE_ARC_REG(READ_ARC_REG(base) | (0x01 << GPIO_ID(pin)), base);
-    } else {
-        MMIO_REG_VAL(base) |= (0x01 << GPIO_ID(pin));
-    }
+  if (SS_GPIO == GPIO_TYPE(pin)) {
+    WRITE_ARC_REG(READ_ARC_REG(base) | (0x01 << GPIO_ID(pin)), base);
+  } else {
+    MMIO_REG_VAL(base) |= (0x01 << GPIO_ID(pin));
+  }
 }
 
 #define DIRECT_READ(base, pin)    directRead(base, pin)
@@ -201,32 +201,32 @@ void directWriteHigh(volatile IO_REG_TYPE *base, IO_REG_TYPE pin)
 // library interface description
 class CapacitiveSensor
 {
-  // user-accessible "public" interface
+    // user-accessible "public" interface
   public:
-  // methods
-  CapacitiveSensor(uint8_t sendPin, uint8_t receivePin1, uint8_t receivePin2);
-  unsigned int* sense(uint8_t samples);
-  // library-accessible "private" interface
+    // methods
+    CapacitiveSensor(uint8_t sendPin, uint8_t receivePin1, uint8_t receivePin2);
+    unsigned int* sense(uint8_t samples);
+    // library-accessible "private" interface
   private:
-  // variables
-  int error;
-  unsigned long  leastTotal;
-  unsigned int   loopTimingFactor;
-  unsigned long  CS_Timeout_Millis;
-  unsigned int  total1;
-  unsigned int  total2;
-  unsigned int *retVal;
-  bool pin1State;
-  bool pin2State;
+    // variables
+    int error;
+    unsigned long  leastTotal;
+    unsigned int   loopTimingFactor;
+    unsigned long  CS_Timeout_Millis;
+    unsigned int  total1;
+    unsigned int  total2;
+    unsigned int *retVal;
+    bool pin1State;
+    bool pin2State;
 
-  IO_REG_TYPE sBit;   // send pin's ports and bitmask
-  volatile IO_REG_TYPE *sReg;
-  IO_REG_TYPE r1Bit;   // receive 1 pin's ports and bitmask
-  volatile IO_REG_TYPE *r1Reg;
-  IO_REG_TYPE r2Bit;   // receive 2 pin's ports and bitmask
-  volatile IO_REG_TYPE *r2Reg;
-  // methods
-  int SenseOneCycle(void);
+    IO_REG_TYPE sBit;   // send pin's ports and bitmask
+    volatile IO_REG_TYPE *sReg;
+    IO_REG_TYPE r1Bit;   // receive 1 pin's ports and bitmask
+    volatile IO_REG_TYPE *r1Reg;
+    IO_REG_TYPE r2Bit;   // receive 2 pin's ports and bitmask
+    volatile IO_REG_TYPE *r2Reg;
+    // methods
+    int SenseOneCycle(void);
 };
 
 #endif

@@ -5,9 +5,9 @@
 
 class Output
 {
- public:
-  virtual void sendKeyEvent(int key, bool pressed, bool doublePressed);
-  virtual void sendSensorEvent(float position);
+  public:
+    virtual void sendKeyEvent(int key, bool pressed, bool doublePressed);
+    virtual void sendSensorEvent(float position);
 };
 
 #endif
