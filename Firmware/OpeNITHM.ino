@@ -1,6 +1,4 @@
-#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega32u4__)
-#define USB
-#endif
+#include "PinConfig.h"
 
 #ifdef USB
 #include "USBOutput.h"
@@ -11,7 +9,6 @@
 #include "AirSensor.h"
 #include "Touchboard.h"
 #include <FastLED.h>
-#include "PinConfig.h"
 
 CRGB leds[16];
 
@@ -47,7 +44,7 @@ void parseCommand()
   {
     case 't': // touchboard
       while (!Serial.available());
-      char input2 = Serial.read();
+      input2 = Serial.read();
       switch (input2)
       {
         case 't': // threshold
@@ -65,7 +62,7 @@ void parseCommand()
       break;
     case 'i': // ir sensors
       while (!Serial.available());
-      char input2 = Serial.read();
+      input2 = Serial.read();
       switch (input2)
       {
         case 'd': // dead zone
@@ -115,7 +112,7 @@ void parseCommand()
       break;
     case 'l': // change led color
       while (!Serial.available());
-      char input2 = Serial.read();
+      input2 = Serial.read();
       switch (input2)
       {
         case 'o': // on

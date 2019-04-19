@@ -1,30 +1,30 @@
 /*
- CapacitiveSense.h - Capacitive Sensing Library for 'duino / Wiring
- https://github.com/PaulStoffregen/CapacitiveSensor
- http://www.pjrc.com/teensy/td_libs_CapacitiveSensor.html
- http://playground.arduino.cc/Main/CapacitiveSensor
- Copyright (c) 2009 Paul Bagder
- Updates for other hardare by Paul Stoffregen, 2010-2016
- Several modifications to better suit OpeNITHM by Jonathan Montineri, 2019
- vim: set ts=4:
+  CapacitiveSense.h - Capacitive Sensing Library for 'duino / Wiring
+  https://github.com/PaulStoffregen/CapacitiveSensor
+  http://www.pjrc.com/teensy/td_libs_CapacitiveSensor.html
+  http://playground.arduino.cc/Main/CapacitiveSensor
+  Copyright (c) 2009 Paul Bagder
+  Updates for other hardare by Paul Stoffregen, 2010-2016
+  Several modifications to better suit OpeNITHM by Jonathan Montineri, 2019
+  vim: set ts=4:
 
- Permission is hereby granted, free of charge, to any person obtaining a
- copy of this software and associated documentation files (the "Software"),
- to deal in the Software without restriction, including without limitation
- the rights to use, copy, modify, merge, publish, distribute, sublicense,
- and/or sell copies of the Software, and to permit persons to whom the
- Software is furnished to do so, subject to the following conditions:
+  Permission is hereby granted, free of charge, to any person obtaining a
+  copy of this software and associated documentation files (the "Software"),
+  to deal in the Software without restriction, including without limitation
+  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+  and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
 
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- DEALINGS IN THE SOFTWARE.
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  DEALINGS IN THE SOFTWARE.
 */
 
 #if ARDUINO >= 100
@@ -63,7 +63,7 @@ CapacitiveSensor::CapacitiveSensor(uint8_t sendPin, uint8_t receivePin1, uint8_t
 
   // Get pin bitmask and registers
 
-  sBit = PIN_TO_BITMASK(sendPin); 
+  sBit = PIN_TO_BITMASK(sendPin);
   sReg = PIN_TO_BASEREG(sendPin);
 
   r1Bit = PIN_TO_BITMASK(receivePin1);
@@ -124,7 +124,7 @@ int CapacitiveSensor::SenseOneCycle(void)
     total2 += !pin2State;
 
     // Break once both pins are high
-    if(pin1State && pin2State) break;
+    if (pin1State && pin2State) break;
   }
 
   if (total1 > CS_Timeout_Millis) {
@@ -142,18 +142,18 @@ int CapacitiveSensor::SenseOneCycle(void)
   DIRECT_WRITE_LOW(sReg, sBit); // sendPin LOW
 
   // Same loop as above, but measuring capacitor discharge time instead
-  while ( (total1 < CS_Timeout_Millis) ) {  
+  while ( (total1 < CS_Timeout_Millis) ) {
     pin1State = DIRECT_READ(r1Reg, r1Bit);
     pin2State = DIRECT_READ(r2Reg, r2Bit);
 
     total1 += pin1State;
     total2 += pin2State;
 
-    if(!(pin1State || pin2State)) break;
+    if (!(pin1State || pin2State)) break;
   }
 
   if (total1 >= CS_Timeout_Millis) {
-    return -2;    
+    return -2;
   } else {
     return 1;
   }

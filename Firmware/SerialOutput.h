@@ -4,9 +4,9 @@
 #define _SERIALOUTPUT_h
 
 #if defined(ARDUINO) && ARDUINO >= 100
-  #include "arduino.h"
+#include "arduino.h"
 #else
-  #include "WProgram.h"
+#include "WProgram.h"
 #endif
 #include "Output.h"
 
@@ -31,11 +31,11 @@ union Packet
 
 class SerialOutput : public Output
 {
-private:
-  Packet builtPacket = Packet();
-public:
-  void sendKeyEvent(int key, bool pressed, bool doublePressed) override;
-  void sendSensorEvent(float position) override;
+  private:
+    Packet builtPacket = Packet();
+  public:
+    void sendKeyEvent(int key, bool pressed, bool doublePressed) override;
+    void sendSensorEvent(float position) override;
 };
 
 #endif
