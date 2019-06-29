@@ -10,14 +10,14 @@ void USBOutput::sendKeyEvent(int key, bool pressed, bool doublePressed)
 {
   if (pressed) {
     if (doublePressed) {
-      NKROKeyboard.write(topRow[key]);
+      writeKey(topRow[key]);
     }
     else {
-      NKROKeyboard.press(bottomRow[key]);
+      pressKey(bottomRow[key]);
     }
   }
   else {
-    NKROKeyboard.release(bottomRow[key]);
+    releaseKey(bottomRow[key]);
   }
 }
 
@@ -25,28 +25,62 @@ void USBOutput::sendSensorEvent(float position)
 {
   // Send hand up / hand down key
   if (position > lastPosition) {
-    NKROKeyboard.write(KEY_PAGE_UP);
+    writeKey(KEY_PAGE_UP);
   }
   if (position < lastPosition) {
-    NKROKeyboard.write(KEY_PAGE_DOWN);
+    writeKey(KEY_PAGE_DOWN);
   }
 
   // Send hand seen / unseen key
   if (position > 0.05f) {
-    NKROKeyboard.press(KEY_HOME);
+    pressKey(KEY_HOME);
   }
   else {
-    NKROKeyboard.release(KEY_HOME);
+    releaseKey(KEY_HOME);
   }
 
   // Send hand moved key
-  NKROKeyboard.write(KEY_END);
+  writeKey(KEY_END);
 
 }
 
 USBOutput::USBOutput() {
+#ifndef TEENSY
   NKROKeyboard.begin();
+#endif
   lastPosition = 0;
+}
+
+void USBOutput::writeKey(char key)
+{
+#ifndef TEENSY
+  NKROKeyboard.write(key);
+#else
+  Nkro.set_key_ascii((uint8_t)key);
+  Nkro.send_nkro_now();
+  Nkro.reset_key_ascii((uint8_t)key);
+  Nkro.send_nkro_now();
+#endif
+}
+
+void USBOutput::pressKey(char key)
+{
+#ifndef TEENSY
+  pressKey(key);
+#else
+  Nkro.set_key_ascii((uint8_t)key);
+  Nkro.send_nkro_now();
+#endif
+}
+
+void USBOutput::releaseKey(char key)
+{
+#ifndef TEENSY
+  NKROKeyboard.release(key);
+#else
+  Nkro.reset_key_ascii((uint8_t)key);
+  Nkro.send_nkro_now();
+#endif
 }
 
 #endif

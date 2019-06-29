@@ -113,6 +113,9 @@
     <ClInclude Include="CapacitiveSensor.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+	<ClInclude Include="Config.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
     <ClInclude Include="Output.h">
       <FileType>CppCode</FileType>
     </ClInclude>

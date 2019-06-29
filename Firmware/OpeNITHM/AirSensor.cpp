@@ -125,7 +125,12 @@ AirSensor::AirSensor(int requiredSamples, int skippedSamples) : thresholds{ 1000
 #ifndef IR_SENSOR_ANALOG
   // No calibration required in digital mode
   for (int i = 0; i < 6; i++)
+  {
+#ifndef IR_SENSOR_MULTIPLEXED
+    pinMode(ir_sensor_pins[i], INPUT);
+#endif
     calibrated[i] = true;
+  }
   allCalibrated = true;
 #endif
 }
