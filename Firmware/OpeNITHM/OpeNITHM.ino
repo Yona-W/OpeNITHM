@@ -30,7 +30,9 @@ char command[32];
 void onKeyPress(int key, bool wasHeld)
 {
   lightIntensity[key] = 1.0f;
+#if !defined(SERIAL_PLOT) || defined(USB)
   output->sendKeyEvent(key, true, wasHeld);
+#endif
   keyStates[key] = true;
 }
 
@@ -40,6 +42,7 @@ void parseCommand()
 {
   char input1 = Serial.read();
   char input2;
+  int i;
   switch (input1)
   {
     case 't': // touchboard
@@ -58,6 +61,37 @@ void parseCommand()
           break;
         case 'c': // calibrate
           touchboard->calibrateKeys();
+          break;
+        case 'n': // print neutral values
+          Serial.println("Neutral Values");
+          for (i = 0; i < 16; i++)
+          {
+            Serial.print("Key: ");
+            Serial.print(i);
+            Serial.print("\t");
+            Serial.println(touchboard->getNeutralValue(i));
+          }
+          break;
+        case 'e': // print moving average values
+          Serial.println("Moving Average Values");
+          for (i = 0; i < 16; i++)
+          {
+            Serial.print("Key: ");
+            Serial.print(i);
+            Serial.print("\t");
+            Serial.println(touchboard->getEmAverages(i));
+          }
+          break;
+        case 'r': // print raw values
+          Serial.println("Raw Values");
+          for (i = 0; i < 16; i++)
+          {
+            Serial.print("Key: ");
+            Serial.print(i);
+            Serial.print("\t");
+            Serial.println(touchboard->getRawValue(i));
+          }
+          break;
       }
       break;
     case 'i': // ir sensors
@@ -215,17 +249,45 @@ void loop() {
       leds[i].setRGB(led_off.r / 2, led_off.g / 2, led_off.b / 2);
       if (keyStates[i])
       {
+#if !defined(SERIAL_PLOT) || defined(USB)
         output->sendKeyEvent(i, false, false);
+#endif
         keyStates[i] = false;
       }
     }
   }
 
+#ifdef SERIAL_PLOT
+  if (PLOT_PIN == -1)
+  {
+    for (int i = 0; i < 16; i++)
+    {
+      Serial.print(touchboard->getRawValue(i));
+      Serial.print("\t");
+    }
+    Serial.println();
+  }
+  else
+  {
+    Serial.print(touchboard->getRawValue(PLOT_PIN));
+    Serial.print("\t");
+    Serial.print(touchboard->getEmAverages(PLOT_PIN));
+    Serial.print("\t");
+    Serial.print(touchboard->getEmAverages(PLOT_PIN) + touchboard->getThreshold());
+    Serial.print("\t");
+    Serial.print(touchboard->getNeutralValue(PLOT_PIN));
+    Serial.print("\t");
+    Serial.println(touchboard->getNeutralValue(PLOT_PIN) + touchboard->getDeadzone());
+  }
+#endif
+
   // Process air sensor hand position
   const float newPosition = sensor->getHandPosition();
   if (newPosition != sensorPosition)
   {
+#if !defined(SERIAL_PLOT) || defined(USB)
     output->sendSensorEvent(newPosition);
+#endif
     sensorPosition = newPosition;
   }
 

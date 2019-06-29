@@ -4,14 +4,18 @@
 #define _TOUCHBOARD_h
 
 #include "PinConfig.h"
+#ifndef TEENSY
 #include "CapacitiveSensor.h"
+#endif
 #include <EEPROM.h>
 #define EMA_TOUCHDETECT_ALPHA 0.1f
 
 class Touchboard
 {
   private:
+#ifndef TEENSY
     CapacitiveSensor sensor;
+#endif
 
     uint16_t threshold;
     uint16_t deadzone;
@@ -23,7 +27,7 @@ class Touchboard
     void (*onKeyPress)(int, bool);
 
   public:
-    boolean key_states[16];
+    bool key_states[16];
 
     Touchboard(void(*keyPressCallback)(int, bool));
     void scan();
@@ -34,7 +38,9 @@ class Touchboard
     int getThreshold();
     int getDeadzone();
     float getAlpha();
+    float getNeutralValue(int key);
     float getEmAverages(int key);
+    float getRawValue(int key);
     void calibrateKeys();
 };
 
