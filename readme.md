@@ -14,13 +14,13 @@ Locate your `arduino` folder (usually `C:\Program Files (x86)\arduino`).
 
 #### I have a fresh install of Teensyduino, or have never modified my USB profiles
 
-Copy `Firmware/Teensy Files/boards.txt` to `arduino\hardware\teensy\avr\` and overwrite the existing.
+Copy `Firmware/Teensy/boards.txt` to `arduino\hardware\teensy\avr\` and overwrite the existing.
 
-Copy `Firmware/Teensy Files/teensy3` to `arduino\hardware\teensy\avr\cores\teensy3` and overwrite any conflicts.
+Copy `Firmware/Teensy/teensy3` to `arduino\hardware\teensy\avr\cores\teensy3` and overwrite any conflicts.
 
 #### I am applying the changes manually
 
-(It is easier to copy and paste from the files in `Firmware/Teensy Files` instead of through here, the below is just for reference.)
+(It is easier to copy and paste from the files in `Firmware/Teensy` instead of through here, the below is just for reference.)
 
 Add `usb_nkro.c` and `usb_nkro.h` to `arduino\hardware\teensy\avr\cores\teensy3`
 
