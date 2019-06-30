@@ -7,6 +7,7 @@ Firmware, schematics, board layout, and CAD files are included in this repo.
 ## List of Hardware
 
 In the `CAD\STL` folder, you will find numerous parts that must be 3D printed.
+
 | Part | Qty |
 | --- |:---:|
 | Center Frame | 1 |
@@ -24,6 +25,7 @@ In the `CAD\STL` folder, you will find numerous parts that must be 3D printed.
 2. Print out mirrored version of these parts as well.
 
 You will also need the following hardware:
+
 | Part                                                                       | Qty |
 | --- |:---:|
 | 4-40 Flat Head Screw, length 3/16" to 5/16" will work **OR** M3 equivalent | 2   |
