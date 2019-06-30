@@ -158,7 +158,7 @@ In `arduino\hardware\teensy\avr\cores\teensy3\usb_desc.c` add lines 603-610 and 
 606    #define NKRO_INTERFACE_DESC_SIZE	9+9+7
 607    #define NKRO_HID_DESC_OFFSET	NKRO_INTERFACE_DESC_POS+9
 608    #else
-609    #define NKRO_INTERFACE_DESC_POS	0
+609    #define NKRO_INTERFACE_DESC_SIZE	0
 610    #endif
 611    
 612    #define CONFIG_DESC_SIZE		NKRO_INTERFACE_DESC_POS+NKRO_INTERFACE_DESC_SIZE
