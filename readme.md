@@ -29,7 +29,8 @@ You will also need the following hardware:
 | Part                                                                       | Qty |
 | --- |:---:|
 | 4-40 Flat Head Screw, length 3/16" to 5/16" will work **OR** M3 equivalent | 2   |
-| Acrylic Rectangles, 90mm x 26mm (Thickness 3mm **OR** 1/8"                 | 16  |
+| Acrylic Rectangles, 90mm x 26mm, Thickness 3mm **OR** 1/8"                 | 16  |
+| Copper Tape, cut into rectangles 95mm x 26mm                               | 16  |
 
 ## List of Electronics
 
@@ -40,6 +41,7 @@ Based on testing, it seems the Teensy LC is easier to set up and calibrate, but 
 
 Links are mostly suggestions (except the Teensy, which is only officially available through the PJRC site and authorized resellers).
 The links below also assume you want to socket your Teensy and multiplexers for later use. You can solder them directly, if you'd like.
+If you are going to solder your sensors directly to the PCB, it is not necessary buy the 0.1" Pin Header, Right Angle. Otherwise, include female 0.1" sockets for your sensors (commonly referred to as Dupont connectors).
 
 | Part | Link | Qty |
 | --- | --- |:---:|
