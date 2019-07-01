@@ -335,9 +335,9 @@ When a second finger touches the pad, the following keys are pressed in order of
 ```
 
 The air sensor functions as follows:
-`Home` is held as long as any sensor is triggered and released when there are no sensors triggered.
-`End` is pressed and released any time a sensor is triggered.
-`Page Up` is pressed and released when the sensor detections movement upwards.
-`Page Down` is pressed and released when the sensor detections movement downwards.
+- `Home` is held as long as any sensor is triggered and released when there are no sensors triggered.
+- `End` is pressed when any motion is detected, as long as the hand was previously in front of the sensors.
+- `Page Up` is pressed and released when the sensor detections movement upwards.
+- `Page Down` is pressed and released when the sensor detections movement downwards.
 
 These are the standard controls for Seaurchin and the firmware will receive an update for Laverita when it releases.
