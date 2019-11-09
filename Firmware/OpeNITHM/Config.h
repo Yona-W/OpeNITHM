@@ -15,6 +15,10 @@
 // Uncomment this line if your IR sensors will be used in analog mode (Confirm pinout on PinConfig.h)
 //#define IR_SENSOR_ANALOG
 
+// Comment this line for default Seaurchin air sensor bindings
+// Uncomment this line if your IR sensors will each be mapped to separate keyboard key
+//#define IR_SENSOR_KEY
+
 // Uncomment this line to output the RAW touch values to the Serial port (for use with Arduino's Serial Plotter)
 //#define SERIAL_PLOT
 // Define PLOT_PIN as -1 to print all key's values, otherwise define as 0-15 for an individual key

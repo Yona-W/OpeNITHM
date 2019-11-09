@@ -27,6 +27,7 @@ class USBOutput : public Output
   public:
     void sendKeyEvent(int key, bool pressed, bool doublePressed) override;
     void sendSensorEvent(float position) override;
+    void sendSensor(int sensor) override;
     USBOutput();
 };
 

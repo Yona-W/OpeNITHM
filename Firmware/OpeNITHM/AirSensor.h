@@ -38,6 +38,7 @@ class AirSensor
     bool getSensorState(int sensor);
     int getValue(int sensor, bool light);
     float getHandPosition();
+    uint8_t getSensorReadings();
 
     void setDeadzone(int deadzone);
     void setAlpha(float alpha);
