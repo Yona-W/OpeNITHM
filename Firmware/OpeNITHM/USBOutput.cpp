@@ -6,18 +6,22 @@
 char bottomRow[] = {'a', 'z', 's', 'x', 'd', 'c', 'f', 'v', 'g', 'b', 'h', 'n', 'j', 'm', 'k', ','};
 char topRow[] = {'1', 'q', '2', 'w', '3', 'e', '4', 'r', '5', 't', '6', 'y', '7', 'u', '8', 'i'};
 
+uint16_t airKeys[] = { KEY_SLASH, KEY_PERIOD, KEY_QUOTE , KEY_SEMICOLON, KEY_RIGHT_BRACE , KEY_LEFT_BRACE };
+
 void USBOutput::sendKeyEvent(int key, bool pressed, bool doublePressed)
 {
   if (pressed) {
     if (doublePressed) {
-      writeKey(topRow[key]);
+      pressKey(topRow[key]);
     }
     else {
       pressKey(bottomRow[key]);
+      releaseKey(topRow[key]);
     }
   }
   else {
     releaseKey(bottomRow[key]);
+    releaseKey(topRow[key]);
   }
 }
 
@@ -58,6 +62,17 @@ void USBOutput::sendSensorEvent(float position)
   lastPosition = position;
 }
 
+void USBOutput::sendSensor(int sensor)
+{
+  for (int i = 0; i < 6; i++)
+  {
+    if (bitRead(sensor, i))
+      pressKey(airKeys[i]);
+    else
+      releaseKey(airKeys[i]);
+  }
+}
+
 USBOutput::USBOutput()
 {
 #ifndef TEENSY
@@ -77,6 +92,12 @@ void USBOutput::writeKey(uint16_t key)
     case KEY_PAGE_DOWN:
     case KEY_HOME:
     case KEY_END:
+    case KEY_SLASH:
+    case KEY_PERIOD:
+    case KEY_QUOTE:
+    case KEY_SEMICOLON:
+    case KEY_RIGHT_BRACE:
+    case KEY_LEFT_BRACE:
       // Don't use ASCII method
       Nkro.set_key(key);
       Nkro.send_nkro_now();
@@ -105,6 +126,12 @@ void USBOutput::pressKey(uint16_t key)
     case KEY_PAGE_DOWN:
     case KEY_HOME:
     case KEY_END:
+    case KEY_SLASH:
+    case KEY_PERIOD:
+    case KEY_QUOTE:
+    case KEY_SEMICOLON:
+    case KEY_RIGHT_BRACE:
+    case KEY_LEFT_BRACE:
       // Don't use ASCII method
       Nkro.set_key(key);
       Nkro.send_nkro_now();
@@ -129,6 +156,12 @@ void USBOutput::releaseKey(uint16_t key)
     case KEY_PAGE_DOWN:
     case KEY_HOME:
     case KEY_END:
+    case KEY_SLASH:
+    case KEY_PERIOD:
+    case KEY_QUOTE:
+    case KEY_SEMICOLON:
+    case KEY_RIGHT_BRACE:
+    case KEY_LEFT_BRACE:
       // Don't use ASCII method
       Nkro.reset_key(key);
       Nkro.send_nkro_now();

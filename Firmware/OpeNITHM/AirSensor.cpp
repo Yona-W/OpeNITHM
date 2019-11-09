@@ -207,6 +207,16 @@ float AirSensor::getHandPosition()
   return highestTriggered == -1 ? 0 : ((float)highestTriggered / 6.0f);
 }
 
+uint8_t AirSensor::getSensorReadings()
+{
+  uint8_t reading = 0;
+  for (int i = 0; i < 6; i++)
+  {
+    reading |= ((int)getSensorState(i) << i);
+  }
+  return reading;
+}
+
 void AirSensor::setDeadzone(int deadzone)
 {
   this->deadzone = deadzone;

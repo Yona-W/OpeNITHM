@@ -277,7 +277,7 @@ void loop() {
     Serial.print("\t");
     Serial.print(touchboard->getNeutralValue(PLOT_PIN));
     Serial.print("\t");
-    Serial.println(touchboard->getNeutralValue(PLOT_PIN) + touchboard->getDeadzone());
+    Serial.print(touchboard->getNeutralValue(PLOT_PIN) + touchboard->getDeadzone());
   }
 #endif
 
@@ -286,10 +286,19 @@ void loop() {
   if (newPosition != sensorPosition)
   {
 #if !defined(SERIAL_PLOT) || defined(USB)
+#ifdef IR_SENSOR_KEY
+    output->sendSensor(sensor->getSensorReadings());
+#else
     output->sendSensorEvent(newPosition);
+#endif
 #endif
     sensorPosition = newPosition;
   }
+
+#if defined(SERIAL_PLOT)
+  Serial.print("\t");
+  Serial.println(sensor->getSensorReadings());
+#endif
 
   // If the air sensor is calibrated, update lights. The lights will stay red as long as the air sensor is not calibrated.
   if (sensor->isCalibrated())
