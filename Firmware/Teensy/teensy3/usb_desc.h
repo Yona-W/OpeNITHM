@@ -902,6 +902,49 @@ let me know?  http://forum.pjrc.com/forums/4-Suggestions-amp-Bug-Reports
   #define ENDPOINT4_CONFIG	ENDPOINT_TRANSMIT_ONLY
   #define ENDPOINT5_CONFIG	ENDPOINT_TRANSMIT_ONLY
   #define ENDPOINT6_CONFIG	ENDPOINT_TRANSMIT_ONLY
+
+#elif defined(USB_SERIAL_NKRO)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x0487
+  #define DEVICE_CLASS		0xEF
+  #define DEVICE_SUBCLASS	0x02
+  #define DEVICE_PROTOCOL	0x01
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'S','e','r','i','a','l','/','N','K','R','O',' ','K','e','y','b','o','a','r','d'}
+  #define PRODUCT_NAME_LEN	20
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS         6
+  #define NUM_USB_BUFFERS	14
+  #define NUM_INTERFACE		5
+  #define CDC_IAD_DESCRIPTOR	1
+  #define CDC_STATUS_INTERFACE	0
+  #define CDC_DATA_INTERFACE	1	// Serial
+  #define CDC_ACM_ENDPOINT	2
+  #define CDC_RX_ENDPOINT       3
+  #define CDC_TX_ENDPOINT       4
+  #define CDC_ACM_SIZE          16
+  #define CDC_RX_SIZE           64
+  #define CDC_TX_SIZE           64
+  #define KEYBOARD_INTERFACE    2	// Keyboard
+  #define KEYBOARD_ENDPOINT     1
+  #define KEYBOARD_SIZE         8
+  #define KEYBOARD_INTERVAL     1
+  #define KEYMEDIA_INTERFACE    3	// Keyboard Media Keys
+  #define KEYMEDIA_ENDPOINT     5
+  #define KEYMEDIA_SIZE         8
+  #define KEYMEDIA_INTERVAL     4
+  #define NKRO_INTERFACE        4	// NKRO Keyboard
+  #define NKRO_ENDPOINT         6
+  #define NKRO_SIZE             32
+  #define NKRO_REPORT_KEYS		( NKRO_SIZE - 1 )
+  #define NKRO_INTERVAL         1
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_TRANSMIT_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT4_CONFIG	ENDPOINT_TRANSMIT_ONLY
+  #define ENDPOINT5_CONFIG	ENDPOINT_TRANSMIT_ONLY
+  #define ENDPOINT6_CONFIG	ENDPOINT_TRANSMIT_ONLY
 #endif
 
 #ifdef USB_DESC_LIST_DEFINE

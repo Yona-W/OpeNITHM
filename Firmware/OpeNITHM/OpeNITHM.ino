@@ -6,6 +6,13 @@
 #include "SerialOutput.h"
 #endif
 
+#ifdef LED_SERIAL
+#include "SerialLeds.h"
+bool updateLeds = false;
+byte serialBuffer[200];
+SerialLeds serialLeds;
+#endif
+
 #include "AirSensor.h"
 #include "Touchboard.h"
 #include <FastLED.h>
@@ -222,31 +229,53 @@ void setup() {
 
 void loop() {
 
-  // Process config commands
+#ifndef LED_SERIAL
+  // Config commands can only be sent when the LEDs aren't being updated via serial
   if (Serial.available())
   {
     parseCommand();
   }
+#else
+  // Wait until have at least one message
+  // For the sake of processing time we'll be discarding every other message
+  if (Serial.available() > 200)
+  {
+    Serial.readBytes(serialBuffer, 200);
+    updateLeds = serialLeds.processBulk(serialBuffer, 200);
+  }
+  else
+    updateLeds = false;
+#endif
 
   // If currently paused through a config command, do not execute main loop
   if (!activated) return;
 
   // Scan touch keyboard and update lights
   touchboard->scan();
+  int index = 0;
   for (int i = 0; i < 16; i++)
   {
-    if (lightIntensity[i] > 0.05f)
-      lightIntensity[i] -= 0.05f;
+#ifndef LED_REVERSE
+    index = i;
+#else
+    index = 15 - i;
+#endif
+    if (lightIntensity[index] > 0.05f)
+      lightIntensity[index] -= 0.05f;
 
     // If the key is currently being held, set its color to purple
     if (touchboard->update(i))
     {
-      leds[i].setRGB(min(led_on.r / 2 + led_on.r / 2 * lightIntensity[i], 255), min(led_on.g / 2 + led_on.g / 2 * lightIntensity[i], 255), min(led_on.b / 2 + led_on.b / 2 * lightIntensity[i], 255));
+#ifndef LED_SERIAL
+      leds[index].setRGB(min(led_on.r / 2 + led_on.r / 2 * lightIntensity[index], 255), min(led_on.g / 2 + led_on.g / 2 * lightIntensity[index], 255), min(led_on.b / 2 + led_on.b / 2 * lightIntensity[index], 255));
+#endif
     }
     else
     {
+#ifndef LED_SERIAL
       // If not, make it yellow and send the "key released" event if it was previously pressed
-      leds[i].setRGB(led_off.r / 2, led_off.g / 2, led_off.b / 2);
+      leds[index].setRGB(led_off.r / 2, led_off.g / 2, led_off.b / 2);
+#endif
       if (keyStates[i])
       {
 #if !defined(SERIAL_PLOT) || defined(USB)
@@ -255,6 +284,14 @@ void loop() {
         keyStates[i] = false;
       }
     }
+
+#ifdef LED_SERIAL
+    if (updateLeds)
+    {
+      RGBLed temp = serialLeds.getKey(i);
+      leds[index].setRGB(temp.r, temp.g, temp.b);
+    }
+#endif
   }
 
 #ifdef SERIAL_PLOT

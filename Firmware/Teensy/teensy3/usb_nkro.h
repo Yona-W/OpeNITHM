@@ -4,7 +4,7 @@
 
 #include "keylayouts.h"
 
-#ifdef USB_NKRO
+#if defined(USB_NKRO) || defined(USB_SERIAL_NKRO)
 
 #include <inttypes.h>
 

@@ -1175,6 +1175,8 @@ teensyLC.menu.usb.flightsim.fake_serial=teensy_gateway
 teensyLC.menu.usb.nkrokeyboard=NKRO Keyboard
 teensyLC.menu.usb.nkrokeyboard.build.usbtype=USB_NKRO
 teensyLC.menu.usb.nkrokeyboard.fake_serial=teensy_gateway
+teensyLC.menu.usb.serialnkrokeyboard=Serial + NKRO Keyboard
+teensyLC.menu.usb.serialnkrokeyboard.build.usbtype=USB_SERIAL_NKRO
 teensyLC.menu.usb.disable=No USB
 teensyLC.menu.usb.disable.build.usbtype=USB_DISABLED
 
