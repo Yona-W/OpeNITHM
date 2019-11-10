@@ -90,6 +90,15 @@ Copy `Firmware/Teensy/teensy3` to `arduino\hardware\teensy\avr\cores\teensy3` an
 
 Add `usb_nkro.c` and `usb_nkro.h` to `arduino\hardware\teensy\avr\cores\teensy3`
 
+In `arduino\hardware\teesny\avr\boards.txt` add lines 1175-1179
+
+```c
+1175    teensyLC.menu.usb.nkrokeyboard=NKRO Keyboard
+1176    teensyLC.menu.usb.nkrokeyboard.build.usbtype=USB_NKRO
+1177    teensyLC.menu.usb.nkrokeyboard.fake_serial=teensy_gateway
+1178    teensyLC.menu.usb.serialnkrokeyboard=Serial + NKRO Keyboard
+1179    teensyLC.menu.usb.serialnkrokeyboard.build.usbtype=USB_SERIAL_NKRO
+
 In `arduino\hardware\teensy\avr\cores\teensy3\WProgram.h` add line 59
 
 ```c
@@ -127,7 +136,7 @@ In `arduino\hardware\teensy\avr\cores\teensy3\usb_dev.h` add lines 93-98
 100   #ifdef MIDI_INTERFACE
 ```
 
-In `arduino\hardware\teensy\avr\cores\teensy3\usb_desc.h` add lines 868-904
+In `arduino\hardware\teensy\avr\cores\teensy3\usb_desc.h` add lines 868-948
 
 ```c
 866      #define ENDPOINT15_CONFIG	ENDPOINT_TRANSMIT_ONLY
@@ -169,9 +178,52 @@ In `arduino\hardware\teensy\avr\cores\teensy3\usb_desc.h` add lines 868-904
 902      #define ENDPOINT4_CONFIG	ENDPOINT_TRANSMIT_ONLY
 903      #define ENDPOINT5_CONFIG	ENDPOINT_TRANSMIT_ONLY
 904      #define ENDPOINT6_CONFIG	ENDPOINT_TRANSMIT_ONLY
-905    #endif
-906    
-907    #ifdef USB_DESC_LIST_DEFINE
+905
+906    #elif defined(USB_SERIAL_NKRO)
+907      #define VENDOR_ID		0x16C0
+908      #define PRODUCT_ID		0x0487
+909      #define DEVICE_CLASS		0xEF
+910      #define DEVICE_SUBCLASS	0x02
+911      #define DEVICE_PROTOCOL	0x01
+912      #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+913      #define MANUFACTURER_NAME_LEN	11
+914      #define PRODUCT_NAME		{'S','e','r','i','a','l','/','N','K','R','O',' ','K','e','y','b','o','a','r','d'}
+915      #define PRODUCT_NAME_LEN	20
+916      #define EP0_SIZE		64
+917      #define NUM_ENDPOINTS         6
+918      #define NUM_USB_BUFFERS	14
+919      #define NUM_INTERFACE		5
+920      #define CDC_IAD_DESCRIPTOR	1
+921      #define CDC_STATUS_INTERFACE	0
+922      #define CDC_DATA_INTERFACE	1	// Serial
+923      #define CDC_ACM_ENDPOINT	2
+924      #define CDC_RX_ENDPOINT       3
+925      #define CDC_TX_ENDPOINT       4
+926      #define CDC_ACM_SIZE          16
+927      #define CDC_RX_SIZE           64
+928      #define CDC_TX_SIZE           64
+929      #define KEYBOARD_INTERFACE    2	// Keyboard
+930      #define KEYBOARD_ENDPOINT     1
+931      #define KEYBOARD_SIZE         8
+932      #define KEYBOARD_INTERVAL     1
+933      #define KEYMEDIA_INTERFACE    3	// Keyboard Media Keys
+934      #define KEYMEDIA_ENDPOINT     5
+935      #define KEYMEDIA_SIZE         8
+936      #define KEYMEDIA_INTERVAL     4
+937      #define NKRO_INTERFACE        4	// NKRO Keyboard
+938      #define NKRO_ENDPOINT         6
+939      #define NKRO_SIZE             32
+940      #define NKRO_REPORT_KEYS		( NKRO_SIZE - 1 )
+941      #define NKRO_INTERVAL         1
+942      #define ENDPOINT1_CONFIG	ENDPOINT_TRANSMIT_ONLY
+943      #define ENDPOINT2_CONFIG	ENDPOINT_TRANSMIT_ONLY
+944      #define ENDPOINT3_CONFIG	ENDPOINT_RECEIVE_ONLY
+945      #define ENDPOINT4_CONFIG	ENDPOINT_TRANSMIT_ONLY
+946      #define ENDPOINT5_CONFIG	ENDPOINT_TRANSMIT_ONLY
+947      #define ENDPOINT6_CONFIG	ENDPOINT_TRANSMIT_ONLY
+948    #endif
+949    
+950    #ifdef USB_DESC_LIST_DEFINE
 ```
 
 In `arduino\hardware\teensy\avr\cores\teensy3\usb_desc.c` add lines 239-265
@@ -306,7 +358,9 @@ If you do not have the FastLED and HID-Project libraries installed, do so though
 
 When using a Pro Micro, select `Arduino/Genuino Micro` from `Tools->Board`.
 
-When using a Teensy LC, select `Teensy LC` from `Tools->Board`, then select `NKRO Keyboard` from `Tools->USB Type`.
+When using a Teensy LC, select `Teensy LC` from `Tools->Board`, then select `NKRO Keyboard` from `Tools->USB Type` for reactive lights. If you are using serial light updates, select `Serial + NKRO Keyboard`.
+
+Prior to compilation, review the (numerous) options available to the end user in `Config.h`. Comment and uncomment the corresponding options that match your setup.
 
 ## Running the Software
 
@@ -323,6 +377,8 @@ ta0.05
 
 Use the command `g` to confirm your changes registered.
 
+**NOTE:** Serial configuration will not work with serial lights. Disable this feature to allow for configuration.
+
 #### Output
 
 By default, the program will run in NKRO Keyboard mode. The specific keyboard keys are set in `USBOutput.cpp`, but are listed here in order of left to right:
@@ -334,10 +390,14 @@ When a second finger touches the pad, the following keys are pressed in order of
 1 q 2 w 3 e 4 r 5 t 6 y 7 u 8 i
 ```
 
-The air sensor functions as follows:
+By default, the air sensor functions as follows:
 - `Home` is held as long as any sensor is triggered and released when there are no sensors triggered.
 - `End` is pressed when any motion is detected, as long as the hand was previously in front of the sensors.
 - `Page Up` is pressed and released when the sensor detections movement upwards.
 - `Page Down` is pressed and released when the sensor detections movement downwards.
 
-These are the standard controls for Seaurchin and the firmware will receive an update for Laverita when it releases.
+If `#define IR_SENSOR_KEY` is uncommented, each air sensor will report back individually. The default binding from bottom to top is:
+```
+/ . ' ; ] [
+```
+Per US QWERTY layout.

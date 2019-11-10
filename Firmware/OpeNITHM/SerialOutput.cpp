@@ -27,3 +27,8 @@ void SerialOutput::sendSensorEvent(float position)
 
   Serial.write(builtPacket.data);
 }
+
+// Implement at a later date
+void SerialOutput::sendSensor(int sensor)
+{
+}
