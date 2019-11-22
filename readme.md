@@ -379,6 +379,29 @@ Use the command `g` to confirm your changes registered.
 
 **NOTE:** Serial configuration will not work with serial lights. Disable this feature to allow for configuration.
 
+Per WinEpic:
+The touch detection system uses an exponential moving average (EMA) to detect changes in the read value. You need to tune 3 values: deadzone, threshold and alpha.
+
+- **Deadzone** is the maximum value for which a key will be considered "untouched". If the read value ever falls below the deadzone value, the key will return to being untouched. The higher this value, the "harder" you need to push the key before it is considered an input, and the faster it will return to neutral once you start lifting your finger.
+- **Threshold** is how large the different between the detected input and the EMA must be for a touch event to occur. It is used for single touches as a way to prevent accidental double inputs, and for double touches to detect them. Increasing it makes the controller less responsive and increases the risk of touches not registering. Decreasing it makes fake inputs more likely, and also makes it harder for the controller to detect multitouch.
+- **Alpha** is how much weight the last readout has in the EMA. It is usually very close to 0. If it is too high, inputs won't register as they will be considered too similar to the moving average. If it is too low, the moving average won't update properly causing touches / double touches to not be detected properly.
+
+Threshold and Deadzone values are expressed relative to the calibration baseline. For example, If a key reads 80 untouched and 100 touched, you're gonna want to set your deadzone to something around 15-20. Start with Alpha at 0.001 and slowly go up from there.
+
+You can configure it using commands sent over the serial port. All changes, aside from recalibrating, apply immediately and persist after restarting.
+
+`tt <value>` changes the threshold.
+`td <value>` changes the deadzone.
+`ta <value>` changes the alpha.
+`tc` forces the controller to recalibrate, if you moved it to a different environment or accidentally touched it during initial calibration.
+`g` prints out the current configuration values.
+
+When tuning, you want to increase alpha until it feels like you're missing inputs, then go back down.
+
+#### Power On
+
+At startup, the LEDs will flash orange 3 times. Do not hold your hands near the touchboard at this time. When the touchboard turns red, calibration begins. After the touchboard turns blue, calibration has finished.
+
 #### Output
 
 By default, the program will run in NKRO Keyboard mode. The specific keyboard keys are set in `USBOutput.cpp`, but are listed here in order of left to right:
