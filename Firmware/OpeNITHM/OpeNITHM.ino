@@ -37,7 +37,7 @@ char command[32];
 void onKeyPress(int key, bool wasHeld)
 {
   lightIntensity[key] = 1.0f;
-#if !defined(SERIAL_PLOT) || defined(USB)
+#if !defined(SERIAL_PLOT) && defined(USB)
   output->sendKeyEvent(key, true, wasHeld);
 #endif
   keyStates[key] = true;
@@ -199,20 +199,37 @@ void setup() {
   Serial.begin(115200);
   FastLED.addLeds<LED_TYPE, RGBPIN, LED_ORDER>(leds, 16);
 
-  // Set LEDs blue
+  // Flash LEDs orange 3 times
+  for (int i = 0; i < 3; i++)
+  {
+    for (CRGB& led : leds)
+    {
+      led = 0xFF5F00;
+      FastLED.show();
+    }
+    delay(1000);
+    for (CRGB& led : leds)
+    {
+      led = 0x000000;
+      FastLED.show();
+    }
+    delay(1000);
+  }
+
+  // Set LEDS to red prior to intialize
   for (CRGB& led : leds)
   {
-    led = 0x0000FF;
+    led = CRGB::Orange;
     FastLED.show();
   }
 
   // Initialize and calibrate touch sensors
   touchboard = new Touchboard(onKeyPress);
 
-  // Set LEDs red
+  // Set LEDs blue for "ready, waiting for air sensor"
   for (CRGB& led : leds)
   {
-    led = 0xFF0000;
+    led = 0x0000FF;
     FastLED.show();
   }
 
@@ -278,7 +295,7 @@ void loop() {
 #endif
       if (keyStates[i])
       {
-#if !defined(SERIAL_PLOT) || defined(USB)
+#if !defined(SERIAL_PLOT) && defined(USB)
         output->sendKeyEvent(i, false, false);
 #endif
         keyStates[i] = false;
@@ -322,7 +339,7 @@ void loop() {
   const float newPosition = sensor->getHandPosition();
   if (newPosition != sensorPosition)
   {
-#if !defined(SERIAL_PLOT) || defined(USB)
+#if !defined(SERIAL_PLOT) && defined(USB)
 #ifdef IR_SENSOR_KEY
     output->sendSensor(sensor->getSensorReadings());
 #else
@@ -332,10 +349,10 @@ void loop() {
     sensorPosition = newPosition;
   }
 
-#if defined(SERIAL_PLOT)
-  Serial.print("\t");
-  Serial.println(sensor->getSensorReadings());
-#endif
+  //#if defined(SERIAL_PLOT)
+  //  Serial.print("\t");
+  //  Serial.println(sensor->getSensorReadings());
+  //#endif
 
   // If the air sensor is calibrated, update lights. The lights will stay red as long as the air sensor is not calibrated.
   if (sensor->isCalibrated())
