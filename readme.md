@@ -380,6 +380,7 @@ Use the command `g` to confirm your changes registered.
 **NOTE:** Serial configuration will not work with serial lights. Disable this feature to allow for configuration.
 
 Per WinEpic:
+
 The touch detection system uses an exponential moving average (EMA) to detect changes in the read value. You need to tune 3 values: deadzone, threshold and alpha.
 
 - **Deadzone** is the maximum value for which a key will be considered "untouched". If the read value ever falls below the deadzone value, the key will return to being untouched. The higher this value, the "harder" you need to push the key before it is considered an input, and the faster it will return to neutral once you start lifting your finger.
@@ -390,11 +391,11 @@ Threshold and Deadzone values are expressed relative to the calibration baseline
 
 You can configure it using commands sent over the serial port. All changes, aside from recalibrating, apply immediately and persist after restarting.
 
-`tt <value>` changes the threshold.
-`td <value>` changes the deadzone.
-`ta <value>` changes the alpha.
-`tc` forces the controller to recalibrate, if you moved it to a different environment or accidentally touched it during initial calibration.
-`g` prints out the current configuration values.
+- `tt <value>` changes the threshold.
+- `td <value>` changes the deadzone.
+- `ta <value>` changes the alpha.
+- `tc` forces the controller to recalibrate, if you moved it to a different environment or accidentally touched it during initial calibration.
+- `g` prints out the current configuration values.
 
 When tuning, you want to increase alpha until it feels like you're missing inputs, then go back down.
 
