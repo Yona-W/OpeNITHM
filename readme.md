@@ -54,7 +54,7 @@ If you are going to solder your sensors directly to the PCB, it is not necessary
 | 0.1" Socket, Straight, 1 row, 5 pos | [LCSC][5] | 2 |
 | 0.1" Socket, Straight, 1 row, 11 pos | [LCSC][6] | 2 |
 | 0.1" Socket, Straight, 1 row, 8 pos | [LCSC][7] | 2 |
-| 10k ohm Resistor, 1/6W or 1/8W | LCSC or Aliexpress | 6 |
+| 51k ohm Resistor, 1/6W or 1/8W | LCSC or Aliexpress | 6 |
 | 33 ohm Resistor, 1/4W, 1/6W, or 1/8W | LCSC or Aliexpress | 3 |
 | 1m WS2812B RGB 5V LED Strip, 30LED Per Meter | [Aliexpress][8] | 1 |
 | IR LED and Photodiode Pair | [Aliexpress (20 pairs)][9] | 6 |
