@@ -26,8 +26,12 @@
 // Uncomment this line if your LED lights are mirrored
 //#define LED_REVERSE
 
-// Uncomment this line to output the RAW touch values to the Serial port (for use with Arduino's Serial Plotter)
+// *** FOR CALIBRATING AND DEBUGGING
+
+// Uncomment this line to output the touch values to the Serial port (for use with Arduino's Serial Plotter)
 //#define SERIAL_PLOT
+// Uncomment this line if you want RAW touch values (vs. normalized)
+//#define SERIAL_RAW_VALUE
 // Define PLOT_PIN as -1 to print all key's values, otherwise define as 0-15 for an individual key
 #define PLOT_PIN -1
 

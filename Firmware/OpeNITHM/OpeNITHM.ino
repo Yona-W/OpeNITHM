@@ -219,7 +219,7 @@ void setup() {
   // Set LEDS to red prior to intialize
   for (CRGB& led : leds)
   {
-    led = CRGB::Orange;
+    led = CRGB::Red;
     FastLED.show();
   }
 
@@ -316,9 +316,16 @@ void loop() {
   {
     for (int i = 0; i < 16; i++)
     {
+#ifdef SERIAL_RAW_VALUES
+      // Print values
       Serial.print(touchboard->getRawValue(i));
+#else
+      // Print normalized values
+      Serial.print(touchboard->getRawValue(i) - touchboard->getNeutralValue(i));
+#endif
       Serial.print("\t");
     }
+    Serial.print(touchboard->getDeadzone());
     Serial.println();
   }
   else
