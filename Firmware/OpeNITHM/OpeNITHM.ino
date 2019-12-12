@@ -356,6 +356,11 @@ void loop() {
     sensorPosition = newPosition;
   }
 
+  // Send update
+#if !defined(SERIAL_PLOT) && defined(USB)
+  output->sendUpdate();
+#endif
+
   //#if defined(SERIAL_PLOT)
   //  Serial.print("\t");
   //  Serial.println(sensor->getSensorReadings());

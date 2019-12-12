@@ -12,8 +12,6 @@
 #include "PinConfig.h"
 #include <EEPROM.h>
 
-
-
 class AirSensor
 {
   private:

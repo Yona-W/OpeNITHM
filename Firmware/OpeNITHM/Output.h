@@ -9,6 +9,7 @@ class Output
     virtual void sendKeyEvent(int key, bool pressed, bool doublePressed);
     virtual void sendSensorEvent(float position);
     virtual void sendSensor(int sensor);
+    virtual void sendUpdate();
 };
 
 #endif

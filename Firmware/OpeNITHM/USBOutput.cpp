@@ -3,8 +3,8 @@
 #ifdef USB
 #include "USBOutput.h"
 
-char bottomRow[] = {'a', 'z', 's', 'x', 'd', 'c', 'f', 'v', 'g', 'b', 'h', 'n', 'j', 'm', 'k', ','};
-char topRow[] = {'1', 'q', '2', 'w', '3', 'e', '4', 'r', '5', 't', '6', 'y', '7', 'u', '8', 'i'};
+char bottomRow[] = {KEY_A, KEY_Z, KEY_S, KEY_X, KEY_D, KEY_C, KEY_F, KEY_V, KEY_G, KEY_B, KEY_H, KEY_N, KEY_J, KEY_M, KEY_K, KEY_COMMA};
+char topRow[] = {KEY_1, KEY_Q, KEY_2, KEY_W, KEY_3, KEY_E, KEY_4, KEY_R, KEY_5, KEY_T, KEY_6, KEY_Y, KEY_7, KEY_U, KEY_8, KEY_I};
 
 uint16_t airKeys[] = { KEY_SLASH, KEY_PERIOD, KEY_QUOTE , KEY_SEMICOLON, KEY_RIGHT_BRACE , KEY_LEFT_BRACE };
 
@@ -86,32 +86,10 @@ void USBOutput::writeKey(uint16_t key)
 #ifndef TEENSY
   NKROKeyboard.write(key);
 #else
-  switch (key)
-  {
-    case KEY_PAGE_UP:
-    case KEY_PAGE_DOWN:
-    case KEY_HOME:
-    case KEY_END:
-    case KEY_SLASH:
-    case KEY_PERIOD:
-    case KEY_QUOTE:
-    case KEY_SEMICOLON:
-    case KEY_RIGHT_BRACE:
-    case KEY_LEFT_BRACE:
-      // Don't use ASCII method
-      Nkro.set_key(key);
-      Nkro.send_nkro_now();
-      Nkro.reset_key(key);
-      Nkro.send_nkro_now();
-      break;
-    default:
-      // Use NKRO for ASCII
-      Nkro.set_key_ascii(key);
-      Nkro.send_nkro_now();
-      Nkro.reset_key_ascii(key);
-      Nkro.send_nkro_now();
-      break;
-  }
+  Nkro.set_key(key);
+  Nkro.send_nkro_now();
+  Nkro.reset_key(key);
+  Nkro.send_nkro_now();
 #endif
 }
 
@@ -120,28 +98,7 @@ void USBOutput::pressKey(uint16_t key)
 #ifndef TEENSY
   pressKey(key);
 #else
-  switch (key)
-  {
-    case KEY_PAGE_UP:
-    case KEY_PAGE_DOWN:
-    case KEY_HOME:
-    case KEY_END:
-    case KEY_SLASH:
-    case KEY_PERIOD:
-    case KEY_QUOTE:
-    case KEY_SEMICOLON:
-    case KEY_RIGHT_BRACE:
-    case KEY_LEFT_BRACE:
-      // Don't use ASCII method
-      Nkro.set_key(key);
-      Nkro.send_nkro_now();
-      break;
-    default:
-      // Use NKRO for ASCII
-      Nkro.set_key_ascii(key);
-      Nkro.send_nkro_now();
-      break;
-  }
+  Nkro.set_key(key);
 #endif
 }
 
@@ -150,29 +107,13 @@ void USBOutput::releaseKey(uint16_t key)
 #ifndef TEENSY
   NKROKeyboard.release(key);
 #else
-  switch (key)
-  {
-    case KEY_PAGE_UP:
-    case KEY_PAGE_DOWN:
-    case KEY_HOME:
-    case KEY_END:
-    case KEY_SLASH:
-    case KEY_PERIOD:
-    case KEY_QUOTE:
-    case KEY_SEMICOLON:
-    case KEY_RIGHT_BRACE:
-    case KEY_LEFT_BRACE:
-      // Don't use ASCII method
-      Nkro.reset_key(key);
-      Nkro.send_nkro_now();
-      break;
-    default:
-      // Use NKRO for ASCII
-      Nkro.reset_key_ascii(key);
-      Nkro.send_nkro_now();
-      break;
-  }
+  Nkro.reset_key(key);
 #endif
+}
+
+void USBOutput::sendUpdate()
+{
+  Nkro.send_nkro_now();
 }
 
 #endif
