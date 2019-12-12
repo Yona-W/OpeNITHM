@@ -93,6 +93,9 @@ int AirSensor::getValue(int sensor, bool light)
     turnOffLight();
   }
 
+  // Delay required because the read may occur faster than the physical light turning on
+  delayMicroseconds(150);
+
 #ifdef IR_SENSOR_MULTIPLEXED
   // Set multiplexer to corresponding sensor
   digitalWrite(MUX_A, bitRead(sensor, 0));
@@ -102,14 +105,12 @@ int AirSensor::getValue(int sensor, bool light)
 #ifdef IR_SENSOR_ANALOG
   return analogRead(SENSOR_IN);
 #else
-  delay(1);
   return digitalRead(SENSOR_IN);
 #endif
 #else
 #ifdef IR_SENSOR_ANALOG
   return analogRead(ir_sensor_pins[sensor]);
 #else
-  delay(1);
   return digitalRead(ir_sensor_pins[sensor]);
 #endif
 #endif

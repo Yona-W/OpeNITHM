@@ -32,3 +32,8 @@ void SerialOutput::sendSensorEvent(float position)
 void SerialOutput::sendSensor(int sensor)
 {
 }
+
+// Implement at a later date
+void SerialOutput::sendUpdate()
+{
+}

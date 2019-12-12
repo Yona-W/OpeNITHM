@@ -37,6 +37,7 @@ class SerialOutput : public Output
     void sendKeyEvent(int key, bool pressed, bool doublePressed) override;
     void sendSensorEvent(float position) override;
     void sendSensor(int sensor) override;
+    void sendUpdate() override;
 };
 
 #endif
