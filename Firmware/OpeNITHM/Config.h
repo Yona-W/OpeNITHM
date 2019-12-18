@@ -35,7 +35,8 @@
 // Define PLOT_PIN as -1 to print all key's values, otherwise define as 0-15 for an individual key
 #define PLOT_PIN -1
 
-
+// Uncomment this if you wish to ignore a falsly calibrated air sensor
+//#define IGNORE_AIR_CALIBRATION
 
 
 // *** DO NOT CHANGE BELOW THIS LINE ***
