@@ -17,12 +17,14 @@ In the `CAD\STL` folder, you will find numerous parts that must be 3D printed.
 | LED Clamp | 16 |
 | Sensor Rail | 2 |
 | Sensor Spacer Left<sup>2</sup> | 1 |
-| Sensor Base Left<sup>2</sup> | 1 |
+| Sensor Base Left<sup>2</sup> **OR** Integrated Sensor Base Left<sup>2</sup> | 1 |
 | Sensor Cover Left<sup>2</sup> | 1 |
+| Integrated Frame Mount Left<sup>2,3</sup> | 1 |
 
 **NOTES:** 
 1. "Key" is designed for 3mm acrylic, "Key-US_Cust" is designed for 1/8" acrylic
 2. Print out mirrored version of these parts as well.
+3. Only print the frame mount if you are using the integrated sensor.
 
 You will also need the following hardware:
 
