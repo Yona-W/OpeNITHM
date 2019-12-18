@@ -102,17 +102,15 @@ int AirSensor::getValue(int sensor, bool light)
   digitalWrite(MUX_B, bitRead(sensor, 1));
   digitalWrite(MUX_C, bitRead(sensor, 2));
   // Return sensor value
-#ifdef IR_SENSOR_ANALOG
-  return analogRead(SENSOR_IN);
+  if (digitalMode)
+    return digitalRead(SENSOR_IN);
+  else
+    return analogRead(SENSOR_IN);
 #else
-  return digitalRead(SENSOR_IN);
-#endif
-#else
-#ifdef IR_SENSOR_ANALOG
-  return analogRead(ir_sensor_pins[sensor]);
-#else
-  return digitalRead(ir_sensor_pins[sensor]);
-#endif
+  if (digitalMode)
+    return digitalRead(ir_sensor_pins[sensor]);
+  else
+    return analogRead(ir_sensor_pins[sensor]);
 #endif
 }
 
@@ -123,22 +121,31 @@ AirSensor::AirSensor(int requiredSamples, int skippedSamples) : thresholds{ 1000
   EEPROM.get(12, deadzone);
   EEPROM.get(16, alpha);
 
-#ifndef IR_SENSOR_ANALOG
-  // No calibration required in digital mode
-  for (int i = 0; i < 6; i++)
+#ifdef IR_SENSOR_ANALOG
+  digitalMode = false;
+#else
+  digitalMode = true;
+#endif
+
+  if (digitalMode)
   {
+    // Digital mode runs calibration in the constructor
+    for (int i = 0; i < 6; i++)
+    {
 #ifndef IR_SENSOR_MULTIPLEXED
-    pinMode(ir_sensor_pins[i], INPUT);
+      pinMode(ir_sensor_pins[i], INPUT);
 #endif
-    calibrated[i] = true;
+      calibrated[i] = getValue(i, true);
+    }
   }
-  allCalibrated = true;
-#endif
 }
 
 // Check if all IR sensors are calibrated. If they are, set a flag to not need to re-check it
 bool AirSensor::isCalibrated()
 {
+#ifdef IGNORE_AIR_CALIBRATION
+  return true;
+#else
   if (!allCalibrated)
   {
     for (int i = 0; i < 6; i++)
@@ -149,6 +156,7 @@ bool AirSensor::isCalibrated()
     allCalibrated = true;
   }
   return allCalibrated;
+#endif
 }
 
 bool AirSensor::getSensorState(int sensor)
@@ -157,40 +165,47 @@ bool AirSensor::getSensorState(int sensor)
   int value = getValue(sensor, true);
   turnOffLight();
 
-#ifdef IR_SENSOR_ANALOG
-  // If the sensor is calibrated, Store its current filtered value.
-  // We are using an exponential moving average to filter out environmental noise. Setting alpha to 1 disables it.
-  if (allCalibrated || calibrated[sensor]) {
-    sensorValues[sensor] = (float)value * alpha + sensorValues[sensor] * (1 - alpha);
-    return sensorValues[sensor] < thresholds[sensor];
-  }
+  if (digitalMode)
+    return value == LOW ? true : false;
   else
   {
-    // If it is not calibrated, perform calibration:
-    // Skip the first few samples. This might not be required, but improved performance in my case.
-    // This might be due to wiring mistakes I made - I'm leaving the code in either way as it can't hurt.
-    if (skippedSamples[sensor] > samplesToSkip)
-    {
-      // Keep the minimum value seen by the sensor
-      if (value < thresholds[sensor]) thresholds[sensor] = value;
-      // If we have enough samples:
-      if (++calibrationSamples[sensor] > samplesToAcquire)
-      {
-        // Consider the sensor calibrated. Finalize calibration for this sensor.
-        sensorValues[sensor] = value;
-        calibrated[sensor] = true;
-        thresholds[sensor] -= deadzone;
-      };
+
+    // If the sensor is calibrated, Store its current filtered value.
+    // We are using an exponential moving average to filter out environmental noise. Setting alpha to 1 disables it.
+    if (allCalibrated || calibrated[sensor]) {
+      sensorValues[sensor] = (float)value * alpha + sensorValues[sensor] * (1 - alpha);
+      return sensorValues[sensor] < thresholds[sensor];
     }
     else
     {
-      skippedSamples[sensor]++;
+      // If it is not calibrated, perform calibration:
+      // Skip the first few samples. This might not be required, but improved performance in my case.
+      // This might be due to wiring mistakes I made - I'm leaving the code in either way as it can't hurt.
+      if (skippedSamples[sensor] > samplesToSkip)
+      {
+        // Keep the minimum value seen by the sensor
+        if (value < thresholds[sensor]) thresholds[sensor] = value;
+        // If we have enough samples:
+        if (++calibrationSamples[sensor] > samplesToAcquire)
+        {
+          // Consider the sensor calibrated. Finalize calibration for this sensor.
+          sensorValues[sensor] = value;
+          calibrated[sensor] = true;
+          thresholds[sensor] -= deadzone;
+        };
+      }
+      else
+      {
+        skippedSamples[sensor]++;
+      }
+      return false;
     }
-    return false;
   }
-#else
-  return value == LOW ? true : false;
-#endif
+}
+
+bool AirSensor::isDigital()
+{
+  return digitalMode;
 }
 
 // Using data from air sensors, compute the height of the player's hand, from 0 (not present) to 1 (highest possible position).
@@ -216,6 +231,11 @@ uint8_t AirSensor::getSensorReadings()
     reading |= ((int)getSensorState(i) << i);
   }
   return reading;
+}
+
+bool AirSensor::getSensorCalibrated(int i)
+{
+  return calibrated[i];
 }
 
 void AirSensor::setDeadzone(int deadzone)

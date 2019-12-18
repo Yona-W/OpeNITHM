@@ -27,16 +27,19 @@ class AirSensor
 
     bool calibrated[6];
     bool allCalibrated;
+    bool digitalMode;
 
     uint16_t deadzone;
     float alpha;
   public:
     AirSensor(int requiredSamples, int skippedSamples);
     bool isCalibrated();
+    bool isDigital();
     bool getSensorState(int sensor);
     int getValue(int sensor, bool light);
     float getHandPosition();
     uint8_t getSensorReadings();
+    bool getSensorCalibrated(int i);
 
     void setDeadzone(int deadzone);
     void setAlpha(float alpha);

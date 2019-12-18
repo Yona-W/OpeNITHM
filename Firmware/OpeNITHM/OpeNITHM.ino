@@ -203,16 +203,12 @@ void setup() {
   for (int i = 0; i < 3; i++)
   {
     for (CRGB& led : leds)
-    {
       led = 0xFF5F00;
-      FastLED.show();
-    }
+    FastLED.show();
     delay(1000);
     for (CRGB& led : leds)
-    {
       led = 0x000000;
-      FastLED.show();
-    }
+    FastLED.show();
     delay(1000);
   }
 
@@ -226,15 +222,28 @@ void setup() {
   // Initialize and calibrate touch sensors
   touchboard = new Touchboard(onKeyPress);
 
-  // Set LEDs blue for "ready, waiting for air sensor"
-  for (CRGB& led : leds)
-  {
-    led = 0x0000FF;
-    FastLED.show();
-  }
-
-  // Initialize air sensor - will automatically calibrate as it starts being read
+  // Initialize air sensor
+  // Digital mode calibrations in the constructor
+  // Analog mode will automatically calibrate as it starts being read
   sensor = new AirSensor(500, 50);
+
+  // Display the number of air sensors that were calibrated
+  for (CRGB& led : leds)
+    led = 0x000000;
+  for (int i = 0; i < 6; i++)
+  {
+    if (sensor->getSensorCalibrated(i))
+      leds[i] = CRGB::Green;
+    else
+      leds[i] = CRGB::Red;
+  }
+  FastLED.show();
+  delay(3000);
+
+  // Set LEDs blue for "ready, waiting for air sensor calibration"
+  for (CRGB& led : leds)
+    led = 0x0000FF;
+  FastLED.show();
 
   // Initialize relevant output method / USB or serial
 #ifdef USB
