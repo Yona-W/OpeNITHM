@@ -42,6 +42,7 @@ Based on testing, it seems the Teensy LC is easier to set up and calibrate, but 
 ### Teensy LC Build
 
 Links are mostly suggestions (except the Teensy, which is only officially available through the PJRC site and authorized resellers).
+(VXKZ: I've heard a lot of trouble regarding good quality IR leds and phototransistors, so I've included specific links to the ones I purchased and has worked well for me.)
 The links below also assume you want to socket your Teensy and multiplexers for later use. You can solder them directly, if you'd like.
 If you are going to solder your sensors directly to the PCB, it is not necessary buy the 0.1" Pin Header, Right Angle. Otherwise, include female 0.1" sockets for your sensors (commonly referred to as Dupont connectors).
 
@@ -59,7 +60,8 @@ If you are going to solder your sensors directly to the PCB, it is not necessary
 | 51k ohm Resistor, 1/6W or 1/8W | LCSC or Aliexpress | 6 |
 | 33 ohm Resistor, 1/4W, 1/6W, or 1/8W | LCSC or Aliexpress | 3 |
 | 1m WS2812B RGB 5V LED Strip, 30LED Per Meter | [Aliexpress][8] | 1 |
-| IR LED and Photodiode Pair | [Aliexpress (20 pairs)][9] | 6 |
+| IR LED | [Ebay (Qty 100)][9] | 6 |
+| IR Phototransistor | [Ebay (Qty 100)][10] | 6 |
 
 [1]: https://www.aliexpress.com/item/32807771098.html
 [2]: https://www.aliexpress.com/item/665534073.html
@@ -69,7 +71,8 @@ If you are going to solder your sensors directly to the PCB, it is not necessary
 [6]: https://lcsc.com/product-detail/Pin-Header-Female-Header_Changjiang-Connectors-A2541HWV-11P_C225508.html
 [7]: https://lcsc.com/product-detail/Pin-Header-Female-Header_Boom-Precision-Elec-2-54mm-1-8P-Straight-Female-header_C27438.html
 [8]: https://www.aliexpress.com/item/2036819167.html
-[9]: https://www.aliexpress.com/item/32395357185.html
+[9]: https://www.ebay.com/itm/100pcs-5mm-IR-Infrared-LED-940nm-Lamp-High-Power-Wide-Angle-Long-Range/251565825589
+[10]: https://www.ebay.com/itm/100pcs-5mm-940nm-IR-LED-Infrared-Beams-Detector-Sensor-Black-Phototransistor/251816201528
 
 
 ## Installing on Teensy LC
