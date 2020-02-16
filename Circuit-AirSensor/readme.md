@@ -1,0 +1,1 @@
+I would recommend using the gerbers.zip file because I had to manually edit holes to be non-plated (Kicad did not like my footprints)
