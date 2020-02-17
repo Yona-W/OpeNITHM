@@ -1,6 +1,5 @@
 EESchema Schematic File Version 4
-LIBS:OpeNITHM-cache
-EELAYER 26 0
+EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
@@ -100,16 +99,12 @@ Capacitive Touch Sensing
 Text Notes 3100 900  0    79   ~ 16
 Teensy LC Headers
 Wire Notes Line rgb(194, 0, 0)
-	3450 2200 3250 2200
+	3300 2150 3300 2500
 Wire Notes Line rgb(194, 0, 0)
-	3250 2200 3250 2500
+	3300 2500 3450 2500
 Wire Notes Line rgb(194, 0, 0)
-	3250 2500 3450 2500
-Wire Notes Line rgb(194, 0, 0)
-	3250 2300 3050 2300
-Wire Notes Line rgb(194, 0, 0)
-	3050 2300 3050 2150
-Text Notes 2750 2150 0    39   ~ 0
+	3050 2150 3050 2100
+Text Notes 2750 2100 0    39   ~ 0
 RGB lighting
 $Comp
 L Device:R R20
@@ -138,11 +133,11 @@ Wire Wire Line
 Text Label 1600 6000 0    50   ~ 0
 AIR_0
 Text Notes 8150 7650 0    50   ~ 0
-2019/06/27
+2020/02/16
 Text Notes 7400 7500 0    59   ~ 0
 OpeNITHM controller board
 Text Notes 10600 7650 0    59   ~ 0
-1
+2
 Text Notes 7100 6900 0    197  ~ 39
 OpeNITHM (Teensy Variant)
 Text Notes 7150 7100 0    79   ~ 0
@@ -232,7 +227,7 @@ Wire Wire Line
 	4150 6450 4150 6400
 Text Label 3850 6000 0    50   ~ 0
 AIR_5
-Text Notes 5650 4600 0    50   ~ 0
+Text Notes 5700 4600 0    50   ~ 0
  Connected to\n   off-board\nphototransistors
 Text Notes 2400 5100 0    79   ~ 16
 IR Sensors
@@ -242,7 +237,7 @@ U 1 1 5C6561AE
 P 7650 3200
 F 0 "R17" V 7550 3200 50  0000 C CNN
 F 1 "33" V 7750 3200 50  0000 C CNN
-F 2 "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 7580 3200 50  0001 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal" V 7580 3200 50  0001 C CNN
 F 3 "~" H 7650 3200 50  0001 C CNN
 	1    7650 3200
 	0    1    1    0   
@@ -253,7 +248,7 @@ U 1 1 5C656A75
 P 7650 3550
 F 0 "R18" V 7550 3550 50  0000 C CNN
 F 1 "33" V 7750 3550 50  0000 C CNN
-F 2 "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 7580 3550 50  0001 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal" V 7580 3550 50  0001 C CNN
 F 3 "~" H 7650 3550 50  0001 C CNN
 	1    7650 3550
 	0    1    1    0   
@@ -264,7 +259,7 @@ U 1 1 5C656AD7
 P 7650 3900
 F 0 "R19" V 7550 3900 50  0000 C CNN
 F 1 "33" V 7750 3900 50  0000 C CNN
-F 2 "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 7580 3900 50  0001 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal" V 7580 3900 50  0001 C CNN
 F 3 "~" H 7650 3900 50  0001 C CNN
 	1    7650 3900
 	0    1    1    0   
@@ -932,10 +927,10 @@ Wire Wire Line
 	1150 4250 1800 4250
 Wire Wire Line
 	1150 4350 1800 4350
-Text Label 3450 1750 0    50   ~ 0
+Text Label 3450 2350 0    50   ~ 0
 TOUCH_0
 Wire Wire Line
-	3450 1750 4100 1750
+	3450 2350 4100 2350
 Wire Wire Line
 	3800 3650 4450 3650
 Wire Wire Line
@@ -1074,63 +1069,53 @@ Wire Wire Line
 Wire Wire Line
 	2850 3750 2300 3750
 Wire Wire Line
-	4100 1850 3450 1850
-Text Label 3450 1850 0    50   ~ 0
+	2150 2050 1500 2050
+Text Label 1500 2050 0    50   ~ 0
 LED_1
 Wire Wire Line
-	3450 2350 4100 2350
-Text Label 3450 2350 0    50   ~ 0
+	1500 2150 2150 2150
+Text Label 1500 2150 0    50   ~ 0
 LED_0
-Text Label 3450 1950 0    50   ~ 0
-MUX_0
-Text Label 3450 2050 0    50   ~ 0
-MUX_1
-Text Label 3450 2150 0    50   ~ 0
+Text Label 1500 1450 0    50   ~ 0
 MUX_2
 Wire Wire Line
-	3450 1950 4100 1950
+	2150 1550 1500 1550
 Wire Wire Line
-	4100 2050 3450 2050
-Wire Wire Line
-	3450 2150 4100 2150
+	1500 1450 2150 1450
 Text Notes 4400 2700 0    59   ~ 0
 13
 Text Label 3450 2550 0    50   ~ 0
 RGB_CO
 Wire Wire Line
 	3450 2550 4100 2550
-Text Label 1500 2150 0    50   ~ 0
+Text Label 1500 2550 0    50   ~ 0
 RGB_DO
-Wire Wire Line
-	1500 2150 2150 2150
-Wire Wire Line
-	1500 2450 2150 2450
 Wire Wire Line
 	1500 2550 2150 2550
 Wire Wire Line
-	1500 2050 2150 2050
+	3450 1950 4100 1950
 Wire Wire Line
-	1500 2350 2150 2350
+	3450 2050 4100 2050
 Wire Wire Line
-	1500 2650 2150 2650
+	3450 1650 4100 1650
 Wire Wire Line
-	1500 2250 2150 2250
-Text Label 1500 2450 0    50   ~ 0
+	3450 1850 4100 1850
+Wire Wire Line
+	3450 2150 4100 2150
+Wire Wire Line
+	3450 1750 4100 1750
+Text Label 3450 1950 0    50   ~ 0
 AIR_0
-Text Label 1500 2550 0    50   ~ 0
+Text Label 3450 2050 0    50   ~ 0
 AIR_1
-Text Label 1500 2650 0    50   ~ 0
+Text Label 3450 2150 0    50   ~ 0
 AIR_2
-Text Label 1500 2050 0    50   ~ 0
+Text Label 3450 1650 0    50   ~ 0
 AIR_3
-Text Label 1500 2250 0    50   ~ 0
+Text Label 3450 1750 0    50   ~ 0
 AIR_4
-Text Label 1500 2350 0    50   ~ 0
+Text Label 3450 1850 0    50   ~ 0
 AIR_5
-Text Label 1500 1850 0    50   ~ 0
-RGB_DO
-Wire Wire Line
-	1500 1850 2150 1850
 Wire Wire Line
 	1500 1950 2150 1950
 Text Label 1500 1950 0    50   ~ 0
@@ -1201,33 +1186,13 @@ Wire Notes Line
 Wire Notes Line
 	1900 5550 1900 6000
 Wire Notes Line
-	3450 1600 3200 1600
-Text Notes 3250 1500 2    39   ~ 0
+	1500 1700 1250 1700
+Text Notes 1300 1600 2    39   ~ 0
 Capacitive touch
 Wire Notes Line
-	3200 1700 3450 1700
+	1250 1800 1500 1800
 Wire Notes Line
-	3200 1500 3200 1700
-Wire Notes Line
-	1500 2000 1350 2000
-Wire Notes Line
-	1350 2000 1350 2600
-Wire Notes Line
-	1350 2600 1500 2600
-Wire Notes Line
-	1500 2500 1350 2500
-Wire Notes Line
-	1500 2400 1350 2400
-Wire Notes Line
-	1500 2300 1350 2300
-Wire Notes Line
-	1500 2200 1350 2200
-Wire Notes Line
-	1350 2350 1150 2350
-Wire Notes Line
-	1150 2350 1150 2200
-Text Notes 1200 2200 2    39   ~ 0
-Light sensors
+	1250 1600 1250 1800
 Wire Wire Line
 	7250 1550 7250 1400
 $Comp
@@ -1359,35 +1324,21 @@ RGB_DO
 Wire Wire Line
 	7150 5300 7800 5300
 Wire Wire Line
-	4100 1650 3450 1650
-Text Label 3450 1650 0    50   ~ 0
+	2150 1750 1500 1750
+Text Label 1500 1750 0    50   ~ 0
 TOUCH_1
-Wire Notes Line rgb(194, 0, 0)
-	1300 1800 1300 2100
-Wire Notes Line rgb(194, 0, 0)
-	1300 2100 1500 2100
-Wire Notes Line rgb(194, 0, 0)
-	1100 1800 1100 1650
-Text Notes 800  1650 0    39   ~ 0
-RGB lighting
 Wire Notes Line rgb(181, 36, 0)
 	1500 1900 1000 1900
 Wire Notes Line rgb(181, 36, 0)
 	1000 1850 1000 1900
-Wire Notes Line rgb(194, 0, 0)
-	1100 1800 1500 1800
+Wire Notes Line rgb(90, 238, 7)
+	1100 2500 1500 2500
 Text Notes 800  1850 0    39   ~ 0
 IR LEDs
 Wire Notes Line rgb(181, 36, 0)
-	3450 1800 2950 1800
+	1500 2100 1350 2100
 Wire Notes Line rgb(181, 36, 0)
-	2950 1750 2950 1800
-Text Notes 2750 1750 0    39   ~ 0
-IR LEDs
-Wire Notes Line rgb(181, 36, 0)
-	3450 2300 3300 2300
-Wire Notes Line rgb(181, 36, 0)
-	3300 2300 3300 1800
+	1350 2100 1350 1900
 Wire Notes Line rgb(194, 0, 0)
 	5050 1350 5050 1300
 Text Notes 4750 1300 0    39   ~ 0
@@ -1409,11 +1360,11 @@ Wire Notes Line
 Wire Notes Line
 	6450 3000 6450 4700
 Wire Notes Line
-	5650 3350 5650 4350
+	5650 3350 5650 4650
 Wire Notes Line
-	5650 4350 5150 4350
+	5650 4650 5150 4650
 Wire Notes Line
-	5150 3350 5150 4350
+	5150 3350 5150 4650
 Wire Notes Line
 	5650 3350 5150 3350
 Wire Notes Line
@@ -1506,4 +1457,73 @@ Text Notes 850  6350 0    28   ~ 0
   IR\nSensor\n  #2
 Text Notes 850  6600 0    28   ~ 0
   IR\nSensor\n  #1
+Text Notes 800  2450 0    39   ~ 0
+RGB lighting
+Wire Notes Line rgb(90, 238, 7)
+	1100 2500 1100 2450
+Text Notes 3150 1700 2    39   ~ 0
+Light sensors
+Wire Notes Line
+	3100 1850 3100 1700
+Wire Notes Line
+	3300 1850 3100 1850
+Wire Notes Line
+	3450 1700 3300 1700
+Wire Notes Line
+	3450 1800 3300 1800
+Wire Notes Line
+	3450 1900 3300 1900
+Wire Notes Line
+	3300 2100 3450 2100
+Wire Notes Line
+	3450 1600 3300 1600
+Wire Notes Line
+	3300 1600 3300 2100
+Wire Notes Line
+	3450 2000 3300 2000
+Wire Notes Line rgb(181, 36, 0)
+	1500 2000 1350 2000
+Wire Notes Line rgb(255, 153, 9)
+	1500 1400 1000 1400
+Wire Notes Line rgb(255, 153, 90)
+	1000 1350 1000 1400
+Text Notes 800  1350 0    39   ~ 0
+IR LEDs
+Wire Notes Line rgb(255, 153, 9)
+	1500 1600 1350 1600
+Wire Notes Line rgb(255, 153, 9)
+	1350 1600 1350 1400
+Wire Notes Line rgb(255, 153, 9)
+	1500 1500 1350 1500
+Wire Wire Line
+	1500 1650 2150 1650
+Text Label 1500 1550 0    50   ~ 0
+MUX_1
+Text Label 1500 1650 0    50   ~ 0
+MUX_0
+Wire Notes Line rgb(194, 0, 0)
+	3050 2150 3300 2150
+Text Notes 3250 2250 2    39   ~ 0
+Capacitive touch
+Wire Notes Line rgb(194, 0, 0)
+	3300 2200 3450 2200
+Wire Notes Line rgb(255, 153, 9)
+	3450 2300 3200 2300
+Wire Notes Line rgb(255, 153, 90)
+	3200 2250 3200 2300
+$Comp
+L power:GND #PWR0104
+U 1 1 5E9D5F1A
+P 5400 4400
+F 0 "#PWR0104" H 5400 4150 50  0001 C CNN
+F 1 "GND" H 5405 4227 50  0000 C CNN
+F 2 "" H 5400 4400 50  0001 C CNN
+F 3 "" H 5400 4400 50  0001 C CNN
+	1    5400 4400
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	4950 4350 5400 4350
+Wire Wire Line
+	5400 4350 5400 4400
 $EndSCHEMATC
