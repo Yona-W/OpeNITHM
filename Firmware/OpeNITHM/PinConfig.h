@@ -3,7 +3,6 @@
 #ifndef _PINCONFIG_h
 #define _PINCONFIG_h
 
-#define CALIBRATION_SAMPLES 500
 
 // Multiplexer pin settings
 #ifdef TEENSY               // Teensy LC

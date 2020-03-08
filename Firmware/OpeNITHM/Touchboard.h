@@ -8,7 +8,9 @@
 #include "CapacitiveSensor.h"
 #endif
 #include <EEPROM.h>
+
 #define EMA_TOUCHDETECT_ALPHA 0.1f
+#define CALIBRATION_SAMPLES 25
 
 class Touchboard
 {

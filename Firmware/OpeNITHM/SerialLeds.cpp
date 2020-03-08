@@ -52,7 +52,7 @@ bool SerialLeds::processBulk(uint8_t *buf, size_t length)
   bool readyToProcess = false;
   currentState = headerSearch;
 
-  for (int i = 0; i < length - 100; i++)
+  for (int i = 0; i < length; i++)
   {
     switch (currentState)
     {

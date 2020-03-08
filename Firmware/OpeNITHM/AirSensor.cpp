@@ -94,7 +94,7 @@ int AirSensor::getValue(int sensor, bool light)
   }
 
   // Delay required because the read may occur faster than the physical light turning on
-  delayMicroseconds(150);
+  delayMicroseconds(130);
 
 #ifdef IR_SENSOR_MULTIPLEXED
   // Set multiplexer to corresponding sensor
@@ -118,8 +118,8 @@ int AirSensor::getValue(int sensor, bool light)
 AirSensor::AirSensor(int requiredSamples, int skippedSamples) : thresholds{ 10000, 10000, 10000, 10000, 10000, 10000 }, calibrationSamples{ 0, 0, 0, 0, 0, 0 }, skippedSamples{ 0, 0, 0, 0, 0, 0 }, samplesToAcquire(requiredSamples), samplesToSkip(skippedSamples), calibrated{ 0, 0, 0, 0, 0, 0 }, allCalibrated(false)
 {
   // Load config values
-  EEPROM.get(12, deadzone);
-  EEPROM.get(16, alpha);
+  EEPROM.get(68, deadzone);
+  EEPROM.get(72, alpha);
 
 #ifdef IR_SENSOR_ANALOG
   digitalMode = false;
@@ -241,13 +241,13 @@ bool AirSensor::getSensorCalibrated(int i)
 void AirSensor::setDeadzone(int deadzone)
 {
   this->deadzone = deadzone;
-  EEPROM.put(12, deadzone);
+  EEPROM.put(68, deadzone);
 }
 
 void AirSensor::setAlpha(float alpha)
 {
   this->alpha = alpha;
-  EEPROM.put(16, alpha);
+  EEPROM.put(72, alpha);
 }
 
 int AirSensor::getDeadzone()

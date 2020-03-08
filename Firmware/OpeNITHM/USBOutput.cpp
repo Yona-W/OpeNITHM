@@ -25,6 +25,25 @@ void USBOutput::sendKeyEvent(int key, bool pressed, bool doublePressed)
   }
 }
 
+void USBOutput::sendKeyEvent(int key, KeyState keyState)
+{
+  switch (keyState) 
+  {
+    case UNPRESSED:
+      releaseKey(bottomRow[key]);
+      releaseKey(topRow[key]);
+      break;
+    case SINGLE_PRESS:
+      pressKey(bottomRow[key]);
+      releaseKey(topRow[key]);
+      break;
+    case DOUBLE_PRESS:
+      pressKey(bottomRow[key]);
+      pressKey(topRow[key]);
+      break;
+  }
+}
+
 void USBOutput::sendSensorEvent(float position)
 {
   // Send hand up / hand down key

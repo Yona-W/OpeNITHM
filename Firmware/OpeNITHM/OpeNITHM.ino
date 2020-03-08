@@ -8,40 +8,29 @@
 
 #ifdef LED_SERIAL
 #include "SerialLeds.h"
-bool updateLeds = false;
 byte serialBuffer[200];
 SerialLeds serialLeds;
 #endif
 
 #include "AirSensor.h"
-#include "Touchboard.h"
+#include "AutoTouchboard.h"
 #include <FastLED.h>
 
+KeyState key_states[16];
 CRGB leds[16];
+bool updateLeds = false;
 
 CRGB led_on = 0xFF00FF; // purple
 CRGB led_off = 0xFFFF00; // yellow
 
 float lightIntensity[16];
-bool keyStates[16];
 bool activated = true;
-float sensorPosition = -1;
 
-Touchboard *touchboard;
+AutoTouchboard *touchboard;
 AirSensor *sensor;
 Output *output;
 
 char command[32];
-
-// Triggered when Touchboard determines a key was pressed
-void onKeyPress(int key, bool wasHeld)
-{
-  lightIntensity[key] = 1.0f;
-#if !defined(SERIAL_PLOT) && defined(USB)
-  output->sendKeyEvent(key, true, wasHeld);
-#endif
-  keyStates[key] = true;
-}
 
 // Parse configuration command. For now, a serial terminal is required (like the monitor in Arduino IDE)
 // Eventually I will make a config tool
@@ -57,37 +46,8 @@ void parseCommand()
       input2 = Serial.read();
       switch (input2)
       {
-        case 't': // threshold
-          touchboard->setThreshold(Serial.parseInt());
-          break;
-        case 'd': // dead zone
-          touchboard->setDeadzone(Serial.parseInt());
-          break;
-        case 'a': // alpha
-          touchboard->setAlpha(Serial.parseFloat());
-          break;
         case 'c': // calibrate
-          touchboard->calibrateKeys();
-          break;
-        case 'n': // print neutral values
-          Serial.println("Neutral Values");
-          for (i = 0; i < 16; i++)
-          {
-            Serial.print("Key: ");
-            Serial.print(i);
-            Serial.print("\t");
-            Serial.println(touchboard->getNeutralValue(i));
-          }
-          break;
-        case 'e': // print moving average values
-          Serial.println("Moving Average Values");
-          for (i = 0; i < 16; i++)
-          {
-            Serial.print("Key: ");
-            Serial.print(i);
-            Serial.print("\t");
-            Serial.println(touchboard->getEmAverages(i));
-          }
+          touchboard->calibrateKeys(true);
           break;
         case 'r': // print raw values
           Serial.println("Raw Values");
@@ -123,12 +83,6 @@ void parseCommand()
       activated = true;
       break;
     case 'g': // print values
-      Serial.print("tt \t");
-      Serial.println(touchboard->getThreshold());
-      Serial.print("td \t");
-      Serial.println(touchboard->getDeadzone());
-      Serial.print("ta \t");
-      Serial.println(touchboard->getAlpha());
       Serial.print("id \t");
       Serial.println(sensor->getDeadzone());
       Serial.print("ia \t");
@@ -220,7 +174,7 @@ void setup() {
   }
 
   // Initialize and calibrate touch sensors
-  touchboard = new Touchboard(onKeyPress);
+  touchboard = new AutoTouchboard();
 
   // Initialize air sensor
   // Digital mode calibrations in the constructor
@@ -240,7 +194,7 @@ void setup() {
   FastLED.show();
   delay(3000);
 
-  // Set LEDs blue for "ready, waiting for air sensor calibration"
+  // Set LEDs blue for "ready"
   for (CRGB& led : leds)
     led = 0x0000FF;
   FastLED.show();
@@ -261,13 +215,14 @@ void loop() {
   {
     parseCommand();
   }
+
+  updateLeds = true;
 #else
   // Wait until have at least one message
-  // For the sake of processing time we'll be discarding every other message
-  if (Serial.available() > 200)
+  if (Serial.available() >= 100)
   {
-    Serial.readBytes(serialBuffer, 200);
-    updateLeds = serialLeds.processBulk(serialBuffer, 200);
+    Serial.readBytes(serialBuffer, 100);
+    updateLeds = serialLeds.processBulk(serialBuffer, 100);
   }
   else
     updateLeds = false;
@@ -279,6 +234,7 @@ void loop() {
   // Scan touch keyboard and update lights
   touchboard->scan();
   int index = 0;
+  
   for (int i = 0; i < 16; i++)
   {
 #ifndef LED_REVERSE
@@ -289,10 +245,14 @@ void loop() {
     if (lightIntensity[index] > 0.05f)
       lightIntensity[index] -= 0.05f;
 
+    KeyState keyState = touchboard->update(i);
+
     // If the key is currently being held, set its color to purple
-    if (touchboard->update(i))
+    if (keyState == SINGLE_PRESS ||
+          keyState == DOUBLE_PRESS)
     {
 #ifndef LED_SERIAL
+      lightIntensity[index] = 1.0f;
       leds[index].setRGB(min(led_on.r / 2 + led_on.r / 2 * lightIntensity[index], 255), min(led_on.g / 2 + led_on.g / 2 * lightIntensity[index], 255), min(led_on.b / 2 + led_on.b / 2 * lightIntensity[index], 255));
 #endif
     }
@@ -302,13 +262,6 @@ void loop() {
       // If not, make it yellow and send the "key released" event if it was previously pressed
       leds[index].setRGB(led_off.r / 2, led_off.g / 2, led_off.b / 2);
 #endif
-      if (keyStates[i])
-      {
-#if !defined(SERIAL_PLOT) && defined(USB)
-        output->sendKeyEvent(i, false, false);
-#endif
-        keyStates[i] = false;
-      }
     }
 
 #ifdef LED_SERIAL
@@ -318,6 +271,13 @@ void loop() {
       leds[index].setRGB(temp.r, temp.g, temp.b);
     }
 #endif
+
+#if !defined(SERIAL_PLOT) && defined(USB)
+    if (key_states[i] != keyState)
+      output->sendKeyEvent(i, keyState);
+#endif
+
+    key_states[i] = keyState;
   }
 
 #ifdef SERIAL_PLOT
@@ -334,36 +294,23 @@ void loop() {
 #endif
       Serial.print("\t");
     }
-    Serial.print(touchboard->getDeadzone());
     Serial.println();
   }
   else
   {
     Serial.print(touchboard->getRawValue(PLOT_PIN));
-    Serial.print("\t");
-    Serial.print(touchboard->getEmAverages(PLOT_PIN));
-    Serial.print("\t");
-    Serial.print(touchboard->getEmAverages(PLOT_PIN) + touchboard->getThreshold());
-    Serial.print("\t");
-    Serial.print(touchboard->getNeutralValue(PLOT_PIN));
-    Serial.print("\t");
-    Serial.print(touchboard->getNeutralValue(PLOT_PIN) + touchboard->getDeadzone());
+    Serial.println();
   }
 #endif
 
   // Process air sensor hand position
-  const float newPosition = sensor->getHandPosition();
-  if (newPosition != sensorPosition)
-  {
 #if !defined(SERIAL_PLOT) && defined(USB)
 #ifdef IR_SENSOR_KEY
     output->sendSensor(sensor->getSensorReadings());
 #else
-    output->sendSensorEvent(newPosition);
+    output->sendSensorEvent(sensor->getHandPosition());
 #endif
 #endif
-    sensorPosition = newPosition;
-  }
 
   // Send update
 #if !defined(SERIAL_PLOT) && defined(USB)
@@ -376,7 +323,6 @@ void loop() {
   //#endif
 
   // If the air sensor is calibrated, update lights. The lights will stay red as long as the air sensor is not calibrated.
-  if (sensor->isCalibrated())
+  if (sensor->isCalibrated() && updateLeds)
     FastLED.show();
-
 }
