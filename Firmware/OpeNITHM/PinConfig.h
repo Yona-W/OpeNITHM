@@ -54,7 +54,7 @@
 #define AIR_SENSOR_1_PIN 19
 #define AIR_SENSOR_2_PIN 18
 #define AIR_SENSOR_3_PIN 23
-#define AIR_SENSOR_4_PIN 21
+#define AIR_SENSOR_4_PIN 22
 #define AIR_SENSOR_5_PIN 21
 #endif
 #else

@@ -36,7 +36,6 @@ class AutoTouchboard
     void saveConfig();
     KeyState update(int key);
     uint16_t getRawValue(int key);
-    uint16_t getNeutralValue(int key);
     void calibrateKeys(bool forceCalibrate = false);
 };
 

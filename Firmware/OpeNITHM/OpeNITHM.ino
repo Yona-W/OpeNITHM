@@ -20,8 +20,8 @@ KeyState key_states[16];
 CRGB leds[16];
 bool updateLeds = false;
 
-CRGB led_on = 0xFF00FF; // purple
-CRGB led_off = 0xFFFF00; // yellow
+CRGB led_on = CRGB::Purple;
+CRGB led_off = CRGB::Yellow;
 
 float lightIntensity[16];
 bool activated = true;
@@ -32,8 +32,6 @@ Output *output;
 
 char command[32];
 
-// Parse configuration command. For now, a serial terminal is required (like the monitor in Arduino IDE)
-// Eventually I will make a config tool
 void parseCommand()
 {
   char input1 = Serial.read();
@@ -157,11 +155,14 @@ void setup() {
   for (int i = 0; i < 3; i++)
   {
     for (CRGB& led : leds)
-      led = 0xFF5F00;
+      led = CRGB::Orange;
+      
     FastLED.show();
     delay(1000);
+    
     for (CRGB& led : leds)
-      led = 0x000000;
+      led = CRGB::Black;
+      
     FastLED.show();
     delay(1000);
   }
@@ -183,7 +184,8 @@ void setup() {
 
   // Display the number of air sensors that were calibrated
   for (CRGB& led : leds)
-    led = 0x000000;
+    led = CFGB::Black;
+    
   for (int i = 0; i < 6; i++)
   {
     if (sensor->getSensorCalibrated(i))
@@ -191,12 +193,14 @@ void setup() {
     else
       leds[i] = CRGB::Red;
   }
+  
   FastLED.show();
   delay(3000);
 
   // Set LEDs blue for "ready"
   for (CRGB& led : leds)
-    led = 0x0000FF;
+    led = CFGB::Blue;
+    
   FastLED.show();
 
   // Initialize relevant output method / USB or serial
@@ -229,7 +233,8 @@ void loop() {
 #endif
 
   // If currently paused through a config command, do not execute main loop
-  if (!activated) return;
+  if (!activated) 
+    return;
 
   // Scan touch keyboard and update lights
   touchboard->scan();
