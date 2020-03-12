@@ -24,7 +24,7 @@ class AutoTouchboard
 #ifndef TEENSY
     CapacitiveSensor sensor;
 #endif
-
+    uint8_t sensitivity;
     uint16_t key_values[16];
     uint16_t single_thresholds[16];
     uint16_t double_thresholds[16];
@@ -37,6 +37,7 @@ class AutoTouchboard
     KeyState update(int key);
     uint16_t getRawValue(int key);
     void calibrateKeys(bool forceCalibrate = false);
+    void setSensitivity(uint8_t sensitivity);
 };
 
 #endif

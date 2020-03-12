@@ -117,10 +117,6 @@ int AirSensor::getValue(int sensor, bool light)
 
 AirSensor::AirSensor(int requiredSamples, int skippedSamples) : thresholds{ 10000, 10000, 10000, 10000, 10000, 10000 }, calibrationSamples{ 0, 0, 0, 0, 0, 0 }, skippedSamples{ 0, 0, 0, 0, 0, 0 }, samplesToAcquire(requiredSamples), samplesToSkip(skippedSamples), calibrated{ 0, 0, 0, 0, 0, 0 }, allCalibrated(false)
 {
-  // Load config values
-  EEPROM.get(68, deadzone);
-  EEPROM.get(72, alpha);
-
 #ifdef IR_SENSOR_ANALOG
   digitalMode = false;
 #else
@@ -138,6 +134,8 @@ AirSensor::AirSensor(int requiredSamples, int skippedSamples) : thresholds{ 1000
       calibrated[i] = getValue(i, true);
     }
   }
+
+  analogSensitivity = 40;
 }
 
 // Check if all IR sensors are calibrated. If they are, set a flag to not need to re-check it
@@ -159,45 +157,46 @@ bool AirSensor::isCalibrated()
 #endif
 }
 
-bool AirSensor::getSensorState(int sensor)
-{
+bool AirSensor::getSensorState(int sensor) {
   // Flash the LED and read the IR sensor
   int value = getValue(sensor, true);
   turnOffLight();
 
-  if (digitalMode)
-    return value == LOW ? true : false;
-  else
+  if (digitalMode) 
   {
-
-    // If the sensor is calibrated, Store its current filtered value.
-    // We are using an exponential moving average to filter out environmental noise. Setting alpha to 1 disables it.
-    if (allCalibrated || calibrated[sensor]) {
-      sensorValues[sensor] = (float)value * alpha + sensorValues[sensor] * (1 - alpha);
-      return sensorValues[sensor] < thresholds[sensor];
-    }
-    else
+    return value == LOW ? true : false;
+  }
+  else 
+  {
+    if (allCalibrated || calibrated[sensor]) 
     {
-      // If it is not calibrated, perform calibration:
-      // Skip the first few samples. This might not be required, but improved performance in my case.
-      // This might be due to wiring mistakes I made - I'm leaving the code in either way as it can't hurt.
-      if (skippedSamples[sensor] > samplesToSkip)
+      sensorValues[sensor] = value;
+      return sensorValues[sensor] < thresholds[sensor];
+    } 
+    else 
+    {
+      // If it is not calibrated, perform calibration
+      // Skip the first few samples
+      if (skippedSamples[sensor] > samplesToSkip) 
       {
         // Keep the minimum value seen by the sensor
-        if (value < thresholds[sensor]) thresholds[sensor] = value;
+        if (value < thresholds[sensor])
+          thresholds[sensor] = value;
+        
         // If we have enough samples:
-        if (++calibrationSamples[sensor] > samplesToAcquire)
+        if (++calibrationSamples[sensor] > samplesToAcquire) 
         {
           // Consider the sensor calibrated. Finalize calibration for this sensor.
           sensorValues[sensor] = value;
           calibrated[sensor] = true;
-          thresholds[sensor] -= deadzone;
-        };
-      }
-      else
+          thresholds[sensor] *= (analogSensitivity / 100);
+        }
+      } 
+      else 
       {
         skippedSamples[sensor]++;
       }
+      
       return false;
     }
   }
@@ -238,26 +237,9 @@ bool AirSensor::getSensorCalibrated(int i)
   return calibrated[i];
 }
 
-void AirSensor::setDeadzone(int deadzone)
+void AirSensor::setAnalogSensitivity(uint8_t analogSensitivity)
 {
-  this->deadzone = deadzone;
-  EEPROM.put(68, deadzone);
-}
-
-void AirSensor::setAlpha(float alpha)
-{
-  this->alpha = alpha;
-  EEPROM.put(72, alpha);
-}
-
-int AirSensor::getDeadzone()
-{
-  return deadzone;
-}
-
-float AirSensor::getAlpha()
-{
-  return alpha;
+  this->analogSensitivity = analogSensitivity;
 }
 
 void AirSensor::recalibrate()
@@ -270,5 +252,6 @@ void AirSensor::recalibrate()
     sensorValues[i] = 0;
     calibrated[i] = false;
   }
+  
   allCalibrated = false;
 }

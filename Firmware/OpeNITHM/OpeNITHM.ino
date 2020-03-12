@@ -8,17 +8,21 @@
 
 #ifdef LED_SERIAL
 #include "SerialLeds.h"
-byte serialBuffer[200];
+byte serialBuffer[100];
 SerialLeds serialLeds;
 #endif
 
 #include "AirSensor.h"
 #include "AutoTouchboard.h"
+#include "SerialProcessor.h"
 #include <FastLED.h>
+
+SerialProcessor serialProcessor;
 
 KeyState key_states[16];
 CRGB leds[16];
 bool updateLeds = false;
+bool useSerialLeds = true;
 
 CRGB led_on = CRGB::Purple;
 CRGB led_off = CRGB::Yellow;
@@ -29,8 +33,6 @@ bool activated = true;
 AutoTouchboard *touchboard;
 AirSensor *sensor;
 Output *output;
-
-char command[32];
 
 void parseCommand()
 {
@@ -63,13 +65,7 @@ void parseCommand()
       while (!Serial.available());
       input2 = Serial.read();
       switch (input2)
-      {
-        case 'd': // dead zone
-          sensor->setDeadzone(Serial.parseInt());
-          break;
-        case 'a': // alpha
-          sensor->setAlpha(Serial.parseFloat());
-          break;
+      { 
         case 'c': // calibrate
           sensor->recalibrate();
       }
@@ -81,10 +77,6 @@ void parseCommand()
       activated = true;
       break;
     case 'g': // print values
-      Serial.print("id \t");
-      Serial.println(sensor->getDeadzone());
-      Serial.print("ia \t");
-      Serial.println(sensor->getAlpha());
       Serial.print("lor \t");
       Serial.println(led_on.r);
       Serial.print("log \t");
@@ -184,7 +176,7 @@ void setup() {
 
   // Display the number of air sensors that were calibrated
   for (CRGB& led : leds)
-    led = CFGB::Black;
+    led = CRGB::Black;
     
   for (int i = 0; i < 6; i++)
   {
@@ -199,7 +191,7 @@ void setup() {
 
   // Set LEDs blue for "ready"
   for (CRGB& led : leds)
-    led = CFGB::Blue;
+    led = CRGB::Blue;
     
   FastLED.show();
 
@@ -212,29 +204,20 @@ void setup() {
 }
 
 void loop() {
-
-#ifndef LED_SERIAL
-  // Config commands can only be sent when the LEDs aren't being updated via serial
-  if (Serial.available())
-  {
-    parseCommand();
-  }
-
-  updateLeds = true;
-#else
-  // Wait until have at least one message
+  // Check for serial messages
   if (Serial.available() >= 100)
   {
     Serial.readBytes(serialBuffer, 100);
-    updateLeds = serialLeds.processBulk(serialBuffer, 100);
+    serialProcessor.processBulk(serialBuffer);
   }
-  else
-    updateLeds = false;
-#endif
 
   // If currently paused through a config command, do not execute main loop
   if (!activated) 
     return;
+
+  // If we're not using serial LEDs, just update the lights every loop
+  if (!useSerialLeds) 
+    updateLeds = true;  
 
   // Scan touch keyboard and update lights
   touchboard->scan();
@@ -247,35 +230,36 @@ void loop() {
 #else
     index = 15 - i;
 #endif
-    if (lightIntensity[index] > 0.05f)
-      lightIntensity[index] -= 0.05f;
 
     KeyState keyState = touchboard->update(i);
 
-    // If the key is currently being held, set its color to purple
-    if (keyState == SINGLE_PRESS ||
-          keyState == DOUBLE_PRESS)
+    // handle changing key colors for non-serial LED updates
+    if (!useSerialLeds)
     {
-#ifndef LED_SERIAL
-      lightIntensity[index] = 1.0f;
-      leds[index].setRGB(min(led_on.r / 2 + led_on.r / 2 * lightIntensity[index], 255), min(led_on.g / 2 + led_on.g / 2 * lightIntensity[index], 255), min(led_on.b / 2 + led_on.b / 2 * lightIntensity[index], 255));
-#endif
+      if (lightIntensity[index] > 0.05f)
+        lightIntensity[index] -= 0.05f;
+  
+      // If the key is currently being held, set its color to the on color
+      if (keyState == SINGLE_PRESS || keyState == DOUBLE_PRESS)
+      {
+        lightIntensity[index] = 1.0f;
+        leds[index].setRGB(min(led_on.r / 2 + led_on.r / 2 * lightIntensity[index], 255), min(led_on.g / 2 + led_on.g / 2 * lightIntensity[index], 255), min(led_on.b / 2 + led_on.b / 2 * lightIntensity[index], 255));
+      }
+      else
+      {
+        // If not, make it the off color
+        leds[index].setRGB(led_off.r / 2, led_off.g / 2, led_off.b / 2);
+      }
     }
-    else
+    // handle changing key colors for serial LED updates
+    else 
     {
-#ifndef LED_SERIAL
-      // If not, make it yellow and send the "key released" event if it was previously pressed
-      leds[index].setRGB(led_off.r / 2, led_off.g / 2, led_off.b / 2);
-#endif
+      if (updateLeds)
+      {
+        RGBLed temp = serialLeds.getKey(i);
+        leds[index].setRGB(temp.r, temp.g, temp.b);
+      }
     }
-
-#ifdef LED_SERIAL
-    if (updateLeds)
-    {
-      RGBLed temp = serialLeds.getKey(i);
-      leds[index].setRGB(temp.r, temp.g, temp.b);
-    }
-#endif
 
 #if !defined(SERIAL_PLOT) && defined(USB)
     if (key_states[i] != keyState)
@@ -329,5 +313,8 @@ void loop() {
 
   // If the air sensor is calibrated, update lights. The lights will stay red as long as the air sensor is not calibrated.
   if (sensor->isCalibrated() && updateLeds)
+  {
     FastLED.show();
+    updateLeds = false;
+  }
 }

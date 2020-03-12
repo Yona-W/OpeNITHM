@@ -3,90 +3,15 @@
 SerialLeds::SerialLeds()
 { }
 
-bool SerialLeds::process(byte in)
+void SerialLeds::processBulk(uint8_t *buf)
 {
-  bool readyToProcess = false;
-  switch (currentState)
+  if (memcmp(buf + 2, lastBuffer + 2, 98) != 0)
   {
-    case headerSearch:
-      // Search for header
-      if (in == 0xAA)
-      {
-        dataBuffer[0] = in;
-        currentState = headerConfirm;
-      }
-      break;
-    case headerConfirm:
-      // Confirm header
-      if (in == 0xAA)
-      {
-        dataBuffer[1] = in;
-        currentState = dataRead;
-        currentReadNum = 2;
-      }
-      else
-      {
-        currentState = headerSearch;
-      }
-      break;
-    case dataRead:
-      {
-        dataBuffer[currentReadNum] = in;
-        currentReadNum++;
-        if (currentReadNum == 100)
-        {
-          if (memcmp(dataBuffer, lastBuffer, 100) != 0)
-            readyToProcess = true;
-          memcpy(lastBuffer, dataBuffer, 100);
-          currentState = headerSearch;
-        }
-      }
-      break;
+    memcpy(ledData.raw, buf + 2, 96);
+    updateLeds = true;
   }
-
-  return readyToProcess;
-}
-
-bool SerialLeds::processBulk(uint8_t *buf, size_t length)
-{
-  bool readyToProcess = false;
-  currentState = headerSearch;
-
-  for (int i = 0; i < length; i++)
-  {
-    switch (currentState)
-    {
-      case headerSearch:
-        if (buf[i] == 0xAA)
-        {
-          currentState = headerConfirm;
-          dataBuffer[0] = buf[i];
-        }
-        break;
-      case headerConfirm:
-        if (buf[i] == 0xAA)
-        {
-          currentState = dataRead;
-          dataBuffer[1] = buf[i];
-        }
-        else
-        {
-          currentState = headerSearch;
-        }
-        break;
-      case dataRead:
-        memcpy(dataBuffer + 2, buf + i, 98);
-        if (memcmp(dataBuffer, lastBuffer, 100) != 0)
-        {
-          memcpy(ledData.raw, dataBuffer + 2, 96);
-          readyToProcess = true;
-        }
-        memcpy(lastBuffer, dataBuffer, 100);
-        currentState = headerSearch;
-        return readyToProcess;
-    }
-  }
-  return readyToProcess;
+  
+  memcpy(lastBuffer, buf, 100);
 }
 
 // Left to Right

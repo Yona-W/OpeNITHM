@@ -18,6 +18,7 @@ class AirSensor
     void changeLight(int light);
     void turnOffLight();
 
+    uint8_t analogSensitivity;
     int thresholds[6];
     int calibrationSamples[6];
     int skippedSamples[6];
@@ -28,9 +29,7 @@ class AirSensor
     bool calibrated[6];
     bool allCalibrated;
     bool digitalMode;
-
-    uint16_t deadzone;
-    float alpha;
+    
   public:
     AirSensor(int requiredSamples, int skippedSamples);
     bool isCalibrated();
@@ -40,11 +39,7 @@ class AirSensor
     float getHandPosition();
     uint8_t getSensorReadings();
     bool getSensorCalibrated(int i);
-
-    void setDeadzone(int deadzone);
-    void setAlpha(float alpha);
-    int getDeadzone();
-    float getAlpha();
+    void setAnalogSensitivity(uint8_t analogSensitivity);
     void recalibrate();
 };
 

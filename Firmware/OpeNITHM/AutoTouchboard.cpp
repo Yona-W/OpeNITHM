@@ -143,7 +143,7 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
       leds[i] = CRGB::Green;
       FastLED.show();
   
-      uint16_t window = (key_values[i] - baselines[i]) * 0.76;
+      uint16_t window = (key_values[i] - baselines[i]) * (sensitivity / 100);
       single_thresholds[i] = baselines[i] + window;
       double_thresholds[i] = baselines[i] + (2 * window);
     }
@@ -176,6 +176,11 @@ uint16_t AutoTouchboard::getRawValue(int key)
   return key_values[key];
 }
 
+void AutoTouchboard::setSensitivity(uint8_t sensitivity)
+{
+  this->sensitivity = sensitivity;
+}
+
 AutoTouchboard::AutoTouchboard()
 #ifndef TEENSY
   sensor(CapacitiveSensor(SEND, RECEIVE_1, RECEIVE_2)),
@@ -184,6 +189,7 @@ AutoTouchboard::AutoTouchboard()
   pinMode(MUX_0, OUTPUT);
   pinMode(MUX_1, OUTPUT);
   pinMode(MUX_2, OUTPUT);
+  sensitivity = 76;
 
   calibrateKeys();
 }
