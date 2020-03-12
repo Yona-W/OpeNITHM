@@ -143,7 +143,7 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
       leds[i] = CRGB::Green;
       FastLED.show();
   
-      uint16_t window = (key_values[i] - baselines[i]) * (sensitivity / 100);
+      uint16_t window = (key_values[i] - baselines[i]) * (sensitivity / 100.0f);
       single_thresholds[i] = baselines[i] + window;
       double_thresholds[i] = baselines[i] + (2 * window);
     }

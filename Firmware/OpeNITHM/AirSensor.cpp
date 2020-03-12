@@ -189,7 +189,7 @@ bool AirSensor::getSensorState(int sensor) {
           // Consider the sensor calibrated. Finalize calibration for this sensor.
           sensorValues[sensor] = value;
           calibrated[sensor] = true;
-          thresholds[sensor] *= (analogSensitivity / 100);
+          thresholds[sensor] *= (analogSensitivity / 100.0f);
         }
       } 
       else 
