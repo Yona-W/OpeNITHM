@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.16
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpeNITHMConfig", "OpeNITHMConfig\OpeNITHMConfig.csproj", "{1AF9AA9B-86ED-4ABB-9B27-AC288B2BF7DA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1AF9AA9B-86ED-4ABB-9B27-AC288B2BF7DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AF9AA9B-86ED-4ABB-9B27-AC288B2BF7DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AF9AA9B-86ED-4ABB-9B27-AC288B2BF7DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AF9AA9B-86ED-4ABB-9B27-AC288B2BF7DA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {741D525C-7CE8-49D3-B152-52B853FE38DD}
+	EndGlobalSection
+EndGlobal
