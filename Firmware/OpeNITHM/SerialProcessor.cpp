@@ -52,7 +52,9 @@ void SerialProcessor::processBulk(uint8_t *buf)
 {
   if (buf[0] == LED_FLAG && buf[1] == LED_FLAG)
   {
-    serialLeds.processBulk(buf);
+    serialLeds->processBulk(buf);
+    useSerialLeds = true;
+    lastSerialLights = millis();
   }
   else if (buf[0] == CONFIG_FLAG && buf[1] == CONFIG_FLAG)
   {

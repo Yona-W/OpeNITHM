@@ -27,11 +27,12 @@
 
 extern AirSensor *sensor;
 extern AutoTouchboard *touchboard;
-extern SerialLeds serialLeds;
+extern SerialLeds *serialLeds;
 extern bool useSerialLeds;
 extern CRGB leds[16];
 extern CRGB led_on;
 extern CRGB led_off;
+extern long lastSerialLights;
 
 class SerialProcessor
 {

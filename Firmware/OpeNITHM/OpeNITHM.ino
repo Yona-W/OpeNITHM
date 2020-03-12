@@ -6,14 +6,9 @@
 #include "SerialOutput.h"
 #endif
 
-#ifdef LED_SERIAL
-#include "SerialLeds.h"
-byte serialBuffer[100];
-SerialLeds serialLeds;
-#endif
-
 #include "AirSensor.h"
 #include "AutoTouchboard.h"
+#include "SerialLeds.h"
 #include "SerialProcessor.h"
 #include <FastLED.h>
 
@@ -21,8 +16,10 @@ SerialProcessor serialProcessor;
 
 KeyState key_states[16];
 CRGB leds[16];
+byte serialBuffer[100];
 bool updateLeds = false;
-bool useSerialLeds = true;
+bool useSerialLeds = false;
+long lastSerialLights;
 
 CRGB led_on = CRGB::Purple;
 CRGB led_off = CRGB::Yellow;
@@ -33,111 +30,7 @@ bool activated = true;
 AutoTouchboard *touchboard;
 AirSensor *sensor;
 Output *output;
-
-void parseCommand()
-{
-  char input1 = Serial.read();
-  char input2;
-  int i;
-  switch (input1)
-  {
-    case 't': // touchboard
-      while (!Serial.available());
-      input2 = Serial.read();
-      switch (input2)
-      {
-        case 'c': // calibrate
-          touchboard->calibrateKeys(true);
-          break;
-        case 'r': // print raw values
-          Serial.println("Raw Values");
-          for (i = 0; i < 16; i++)
-          {
-            Serial.print("Key: ");
-            Serial.print(i);
-            Serial.print("\t");
-            Serial.println(touchboard->getRawValue(i));
-          }
-          break;
-      }
-      break;
-    case 'i': // ir sensors
-      while (!Serial.available());
-      input2 = Serial.read();
-      switch (input2)
-      { 
-        case 'c': // calibrate
-          sensor->recalibrate();
-      }
-      break;
-    case 'p': // pause
-      activated = false;
-      break;
-    case 'r': // resume
-      activated = true;
-      break;
-    case 'g': // print values
-      Serial.print("lor \t");
-      Serial.println(led_on.r);
-      Serial.print("log \t");
-      Serial.println(led_on.g);
-      Serial.print("lob \t");
-      Serial.println(led_on.b);
-      Serial.print("lfr \t");
-      Serial.println(led_off.r);
-      Serial.print("lfg \t");
-      Serial.println(led_off.g);
-      Serial.print("lfb \t");
-      Serial.println(led_off.b);
-      Serial.print(";");
-      break;
-    case 'a': // check if activated
-      Serial.println(activated);
-      Serial.print(";");
-      break;
-    case 'l': // change led color
-      while (!Serial.available());
-      input2 = Serial.read();
-      switch (input2)
-      {
-        case 'o': // on
-          while (!Serial.available());
-          switch ((char)Serial.read())
-          {
-            case 'r': // red
-              led_on.r = Serial.parseInt(); // for now this has to be expressed in decimal
-              break;
-            case 'g': // green
-              led_on.g = Serial.parseInt();
-              break;
-            case 'b': // blue
-              led_on.b = Serial.parseInt();
-              break;
-            case 'e': // everything
-              led_on = Serial.parseInt();
-          }
-          break;
-        case 'f': // off
-          while (!Serial.available());
-          switch ((char)Serial.read())
-          {
-            case 'r': // red
-              led_off.r = Serial.parseInt(); // for now this has to be expressed in decimal
-              break;
-            case 'g': // green
-              led_off.g = Serial.parseInt();
-              break;
-            case 'b': // blue
-              led_off.b = Serial.parseInt();
-              break;
-            case 'e': // everything
-              led_off = Serial.parseInt();
-          }
-          break;
-      }
-      break;
-  }
-}
+SerialLeds *serialLeds;
 
 void setup() {
   Serial.begin(115200);
@@ -159,15 +52,11 @@ void setup() {
     delay(1000);
   }
 
-  // Set LEDS to red prior to intialize
-  for (CRGB& led : leds)
-  {
-    led = CRGB::Red;
-    FastLED.show();
-  }
-
   // Initialize and calibrate touch sensors
   touchboard = new AutoTouchboard();
+
+  // Initialize the serial LED processor
+  serialLeds = new SerialLeds();
 
   // Initialize air sensor
   // Digital mode calibrations in the constructor
@@ -188,12 +77,7 @@ void setup() {
   
   FastLED.show();
   delay(3000);
-
-  // Set LEDs blue for "ready"
-  for (CRGB& led : leds)
-    led = CRGB::Blue;
-    
-  FastLED.show();
+  lastSerialLights = millis();
 
   // Initialize relevant output method / USB or serial
 #ifdef USB
@@ -218,6 +102,10 @@ void loop() {
   // If we're not using serial LEDs, just update the lights every loop
   if (!useSerialLeds) 
     updateLeds = true;  
+
+  // If we haven't received any serial light updates in 5 seconds, just fallback to reactive lighting
+  if (millis() - lastSerialLights > 5000) 
+    useSerialLeds = false;
 
   // Scan touch keyboard and update lights
   touchboard->scan();
@@ -256,7 +144,7 @@ void loop() {
     {
       if (updateLeds)
       {
-        RGBLed temp = serialLeds.getKey(i);
+        RGBLed temp = serialLeds->getKey(i);
         leds[index].setRGB(temp.r, temp.g, temp.b);
       }
     }
