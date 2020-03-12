@@ -46,10 +46,6 @@
             this.grpReactiveLightsConfig = new System.Windows.Forms.GroupBox();
             this.btnSliderOnColor = new System.Windows.Forms.Button();
             this.btnSliderOffColor = new System.Windows.Forms.Button();
-            this.grpLightsMode = new System.Windows.Forms.GroupBox();
-            this.btnChangeLightMode = new System.Windows.Forms.Button();
-            this.radHidLighting = new System.Windows.Forms.RadioButton();
-            this.radReactiveLighting = new System.Windows.Forms.RadioButton();
             this.grpAirConfig = new System.Windows.Forms.GroupBox();
             this.btnCalibrateAir = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
@@ -60,7 +56,6 @@
             this.grpSliderCalibration.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trkSliderSensitivity)).BeginInit();
             this.grpReactiveLightsConfig.SuspendLayout();
-            this.grpLightsMode.SuspendLayout();
             this.grpAirConfig.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trkAirSensitivity)).BeginInit();
             this.SuspendLayout();
@@ -135,12 +130,11 @@
             // 
             this.grpSliderConfig.Controls.Add(this.grpSliderCalibration);
             this.grpSliderConfig.Controls.Add(this.grpReactiveLightsConfig);
-            this.grpSliderConfig.Controls.Add(this.grpLightsMode);
             this.grpSliderConfig.Enabled = false;
             this.grpSliderConfig.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.grpSliderConfig.Location = new System.Drawing.Point(8, 32);
             this.grpSliderConfig.Name = "grpSliderConfig";
-            this.grpSliderConfig.Size = new System.Drawing.Size(294, 399);
+            this.grpSliderConfig.Size = new System.Drawing.Size(294, 260);
             this.grpSliderConfig.TabIndex = 2;
             this.grpSliderConfig.TabStop = false;
             this.grpSliderConfig.Text = "Slider configuration";
@@ -150,7 +144,7 @@
             this.grpSliderCalibration.Controls.Add(this.btnCalibrateSlider);
             this.grpSliderCalibration.Controls.Add(this.label1);
             this.grpSliderCalibration.Controls.Add(this.trkSliderSensitivity);
-            this.grpSliderCalibration.Location = new System.Drawing.Point(6, 260);
+            this.grpSliderCalibration.Location = new System.Drawing.Point(6, 137);
             this.grpSliderCalibration.Name = "grpSliderCalibration";
             this.grpSliderCalibration.Size = new System.Drawing.Size(283, 122);
             this.grpSliderCalibration.TabIndex = 3;
@@ -190,7 +184,7 @@
             this.grpReactiveLightsConfig.Controls.Add(this.btnSliderOnColor);
             this.grpReactiveLightsConfig.Controls.Add(this.btnSliderOffColor);
             this.grpReactiveLightsConfig.Enabled = false;
-            this.grpReactiveLightsConfig.Location = new System.Drawing.Point(6, 140);
+            this.grpReactiveLightsConfig.Location = new System.Drawing.Point(6, 17);
             this.grpReactiveLightsConfig.Name = "grpReactiveLightsConfig";
             this.grpReactiveLightsConfig.Size = new System.Drawing.Size(283, 114);
             this.grpReactiveLightsConfig.TabIndex = 5;
@@ -217,56 +211,13 @@
             this.btnSliderOffColor.UseVisualStyleBackColor = true;
             this.btnSliderOffColor.Click += new System.EventHandler(this.btnSliderOffColor_Click);
             // 
-            // grpLightsMode
-            // 
-            this.grpLightsMode.Controls.Add(this.btnChangeLightMode);
-            this.grpLightsMode.Controls.Add(this.radHidLighting);
-            this.grpLightsMode.Controls.Add(this.radReactiveLighting);
-            this.grpLightsMode.Location = new System.Drawing.Point(6, 19);
-            this.grpLightsMode.Name = "grpLightsMode";
-            this.grpLightsMode.Size = new System.Drawing.Size(283, 115);
-            this.grpLightsMode.TabIndex = 0;
-            this.grpLightsMode.TabStop = false;
-            this.grpLightsMode.Text = "Lighting mode";
-            // 
-            // btnChangeLightMode
-            // 
-            this.btnChangeLightMode.Location = new System.Drawing.Point(7, 65);
-            this.btnChangeLightMode.Name = "btnChangeLightMode";
-            this.btnChangeLightMode.Size = new System.Drawing.Size(271, 35);
-            this.btnChangeLightMode.TabIndex = 5;
-            this.btnChangeLightMode.Text = "Apply lighting mode";
-            this.btnChangeLightMode.UseVisualStyleBackColor = true;
-            this.btnChangeLightMode.Click += new System.EventHandler(this.btnChangeLightMode_Click);
-            // 
-            // radHidLighting
-            // 
-            this.radHidLighting.AutoSize = true;
-            this.radHidLighting.Location = new System.Drawing.Point(6, 19);
-            this.radHidLighting.Name = "radHidLighting";
-            this.radHidLighting.Size = new System.Drawing.Size(164, 17);
-            this.radHidLighting.TabIndex = 1;
-            this.radHidLighting.Text = "HID lighting (game-controlled)";
-            this.radHidLighting.UseVisualStyleBackColor = true;
-            // 
-            // radReactiveLighting
-            // 
-            this.radReactiveLighting.AutoSize = true;
-            this.radReactiveLighting.Location = new System.Drawing.Point(6, 42);
-            this.radReactiveLighting.Name = "radReactiveLighting";
-            this.radReactiveLighting.Size = new System.Drawing.Size(206, 17);
-            this.radReactiveLighting.TabIndex = 2;
-            this.radReactiveLighting.TabStop = true;
-            this.radReactiveLighting.Text = "Reactive lighting (lights when pressed)";
-            this.radReactiveLighting.UseVisualStyleBackColor = true;
-            // 
             // grpAirConfig
             // 
             this.grpAirConfig.Controls.Add(this.btnCalibrateAir);
             this.grpAirConfig.Controls.Add(this.label2);
             this.grpAirConfig.Controls.Add(this.trkAirSensitivity);
             this.grpAirConfig.Enabled = false;
-            this.grpAirConfig.Location = new System.Drawing.Point(9, 445);
+            this.grpAirConfig.Location = new System.Drawing.Point(12, 298);
             this.grpAirConfig.Name = "grpAirConfig";
             this.grpAirConfig.Size = new System.Drawing.Size(294, 127);
             this.grpAirConfig.TabIndex = 3;
@@ -305,7 +256,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(311, 579);
+            this.ClientSize = new System.Drawing.Size(311, 433);
             this.Controls.Add(this.grpAirConfig);
             this.Controls.Add(this.grpSliderConfig);
             this.Controls.Add(this.menuStrip1);
@@ -321,8 +272,6 @@
             this.grpSliderCalibration.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trkSliderSensitivity)).EndInit();
             this.grpReactiveLightsConfig.ResumeLayout(false);
-            this.grpLightsMode.ResumeLayout(false);
-            this.grpLightsMode.PerformLayout();
             this.grpAirConfig.ResumeLayout(false);
             this.grpAirConfig.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trkAirSensitivity)).EndInit();
@@ -349,15 +298,11 @@
         private System.Windows.Forms.GroupBox grpReactiveLightsConfig;
         private System.Windows.Forms.Button btnSliderOnColor;
         private System.Windows.Forms.Button btnSliderOffColor;
-        private System.Windows.Forms.GroupBox grpLightsMode;
-        private System.Windows.Forms.RadioButton radHidLighting;
-        private System.Windows.Forms.RadioButton radReactiveLighting;
         private System.Windows.Forms.Button btnCalibrateSlider;
         private System.Windows.Forms.GroupBox grpAirConfig;
         private System.Windows.Forms.Button btnCalibrateAir;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TrackBar trkAirSensitivity;
-        private System.Windows.Forms.Button btnChangeLightMode;
         private System.Windows.Forms.ColorDialog colorDialog;
     }
 }

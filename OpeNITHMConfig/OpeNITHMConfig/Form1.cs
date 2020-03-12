@@ -50,12 +50,11 @@ namespace OpeNITHMConfig
         /// <summary>
         /// Enables the appropriate sets of controls in the main form
         /// </summary>
-        /// <param name="reactiveLighting"></param>
         /// <param name="analogAirSensors"></param>
-        private void enableControls(bool reactiveLighting, bool analogAirSensors)
+        private void enableControls(bool analogAirSensors)
         {
             grpSliderConfig.Enabled = true;
-            grpReactiveLightsConfig.Enabled = reactiveLighting;
+            grpReactiveLightsConfig.Enabled = true;
             grpAirConfig.Enabled = analogAirSensors;
         }
 
@@ -77,7 +76,7 @@ namespace OpeNITHMConfig
         {
             serialPort.PortName = port;
             isConnected = true;
-            enableControls(true, true);
+            enableControls(true);
         }
 
         /// <summary>
@@ -127,18 +126,6 @@ namespace OpeNITHMConfig
             MessageBox.Show("This tool is a configuration application for any OpeNITHM controllers running the following firmware: https://github.com/skogaby/OpeNITHM",
                 "About",
                 MessageBoxButtons.OK);
-        }
-
-        /// <summary>
-        /// Changes the lighting mode of the controller
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void btnChangeLightMode_Click(object sender, EventArgs e)
-        {
-            byte lightMode = (radHidLighting.Checked ? LIGHT_MODE_SERIAL : LIGHT_MODE_REACTIVE);
-
-            sendCommand(CMD_CHANGE_LIGHT_MODE, new byte[] { lightMode });
         }
 
         /// <summary>
