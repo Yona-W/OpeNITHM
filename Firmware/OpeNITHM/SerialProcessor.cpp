@@ -54,7 +54,7 @@ void SerialProcessor::processBulk(uint8_t *buf)
   {
     serialLeds->processBulk(buf);
     useSerialLeds = true;
-    lastSerialLights = millis();
+    serialLightsCounter = 0;
   }
   else if (buf[0] == CONFIG_FLAG && buf[1] == CONFIG_FLAG)
   {

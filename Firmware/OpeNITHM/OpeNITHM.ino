@@ -19,7 +19,7 @@ CRGB leds[16];
 byte serialBuffer[100];
 bool updateLeds = false;
 bool useSerialLeds = false;
-long lastSerialLights;
+int serialLightsCounter;
 
 CRGB led_on = CRGB::Purple;
 CRGB led_off = CRGB::Yellow;
@@ -77,7 +77,7 @@ void setup() {
   
   FastLED.show();
   delay(3000);
-  lastSerialLights = millis();
+  serialLightsCounter = 0;
 
   // Initialize relevant output method / USB or serial
 #ifdef USB
@@ -94,17 +94,17 @@ void loop() {
     Serial.readBytes(serialBuffer, 100);
     serialProcessor.processBulk(serialBuffer);
   }
+  else 
+  {
+    serialLightsCounter++;  
+  }
 
   // If currently paused through a config command, do not execute main loop
   if (!activated) 
     return;
 
-  // If we're not using serial LEDs, just update the lights every loop
-  if (!useSerialLeds) 
-    updateLeds = true;  
-
   // If we haven't received any serial light updates in 5 seconds, just fallback to reactive lighting
-  if (millis() - lastSerialLights > 5000) 
+  if (serialLightsCounter > 300) 
     useSerialLeds = false;
 
   // Scan touch keyboard and update lights
@@ -138,6 +138,8 @@ void loop() {
         // If not, make it the off color
         leds[index].setRGB(led_off.r / 2, led_off.g / 2, led_off.b / 2);
       }
+      
+      updateLeds = true;  
     }
     // handle changing key colors for serial LED updates
     else 
