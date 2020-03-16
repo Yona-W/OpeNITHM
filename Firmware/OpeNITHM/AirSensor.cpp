@@ -94,7 +94,7 @@ int AirSensor::getValue(int sensor, bool light)
   }
 
   // Delay required because the read may occur faster than the physical light turning on
-  delayMicroseconds(130);
+  delayMicroseconds(150);
 
 #ifdef IR_SENSOR_MULTIPLEXED
   // Set multiplexer to corresponding sensor
