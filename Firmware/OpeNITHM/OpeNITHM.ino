@@ -32,10 +32,16 @@ AirSensor *sensor;
 Output *output;
 SerialLeds *serialLeds;
 
+void initializeController();
+
 void setup() {
   Serial.begin(115200);
   FastLED.addLeds<LED_TYPE, RGBPIN, LED_ORDER>(leds, 16);
 
+  initializeController();
+}
+
+void initializeController() {
   // Flash LEDs orange 3 times
   for (int i = 0; i < 3; i++)
   {
@@ -53,9 +59,11 @@ void setup() {
   }
 
   // Initialize and calibrate touch sensors
+  if (touchboard != NULL) delete touchboard;
   touchboard = new AutoTouchboard();
 
   // Initialize the serial LED processor
+  if (serialLeds != NULL) delete serialLeds;
   serialLeds = new SerialLeds();
 
   // Initialize the reactive lighting colors, and if they're not in EEPROM, save them
@@ -76,6 +84,7 @@ void setup() {
   // Initialize air sensor
   // Digital mode calibrations in the constructor
   // Analog mode will automatically calibrate as it starts being read
+  if (sensor != NULL) delete sensor;
   sensor = new AirSensor(500, 50);
 
   // Display the number of air sensors that were calibrated
@@ -95,6 +104,8 @@ void setup() {
   serialLightsCounter = 0;
 
   // Initialize relevant output method / USB or serial
+  if (output != NULL) delete output;
+  
 #ifdef USB
   output = new USBOutput();
 #else

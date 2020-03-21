@@ -20,6 +20,7 @@
 #define CMD_CHANGE_OFF_COLOR 0x33
 #define CMD_CALIBRATE_SLIDER 0x44
 #define CMD_CALIBRATE_AIR_SENSORS 0x55
+#define CMD_FACTORY_RESET 0x66
 
 extern AirSensor *sensor;
 extern AutoTouchboard *touchboard;
@@ -29,6 +30,8 @@ extern CRGB leds[16];
 extern CRGB led_on;
 extern CRGB led_off;
 extern int serialLightsCounter;
+
+extern void initializeController();
 
 class SerialProcessor
 {

@@ -30,6 +30,10 @@ namespace OpeNITHMConfig
         private const int DEFAULT_TOUCH_SENSITIVITY = 15;
         private const int DEFAULT_AIR_SENSITIVITY = 15;
 
+        // default key colors
+        private Color ON_COLOR = Color.Purple;
+        private Color OFF_COLOR = Color.Yellow;
+
         /// <summary>
         /// Whether or not the controller is connected
         /// </summary>
@@ -276,7 +280,12 @@ namespace OpeNITHMConfig
         /// <param name="e"></param>
         private void factoryResetControllerToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            colorDialogOn.Color = ON_COLOR;
+            colorDialogOff.Color = OFF_COLOR;
+            trkSliderSensitivity.Value = DEFAULT_TOUCH_SENSITIVITY;
+            trkAirSensitivity.Value = DEFAULT_AIR_SENSITIVITY;
 
+            sendCommand(CMD_FACTORY_RESET, new byte[] { });
         }
     }
 }

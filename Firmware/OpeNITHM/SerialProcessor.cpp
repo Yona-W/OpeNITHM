@@ -56,6 +56,16 @@ void SerialProcessor::processConfigCommand(uint8_t* buf)
       sensor->setAnalogSensitivity(buf[3]);
       sensor->recalibrate();
       break;
+    case CMD_FACTORY_RESET:
+      // clear EEPROM and then reset the controller
+      for (int i = 0 ; i < EEPROM.length() ; i++) 
+      {
+        EEPROM.write(i, 0);
+      }
+
+      delay(500);
+
+      initializeController();
     default:
       break;
   }
