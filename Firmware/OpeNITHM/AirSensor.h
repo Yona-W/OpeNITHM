@@ -12,6 +12,8 @@
 #include "PinConfig.h"
 #include <EEPROM.h>
 
+#define DEFAULT_SENSITIVITY 40
+
 class AirSensor
 {
   private:
@@ -40,6 +42,7 @@ class AirSensor
     uint8_t getSensorReadings();
     bool getSensorCalibrated(int i);
     void setAnalogSensitivity(uint8_t analogSensitivity);
+    uint8_t getAnalogSensitivity();
     void recalibrate();
 };
 

@@ -6,7 +6,7 @@
 
 // Multiplexer pin settings
 #ifdef TEENSY               // Teensy LC
-#if defined(TEESNY_V1_0)
+#if defined(TEENSY_V1_0)
 #define MUX_0 20
 #define MUX_1 19
 #define MUX_2 18
@@ -23,7 +23,7 @@
 
 // Sensor pin settings
 #ifdef TEENSY
-#if defined(TEESNY_V1_0)
+#if defined(TEENSY_V1_0)
 #define LED_0 16
 #define LED_1 21
 #define LED_2 5
@@ -42,7 +42,7 @@
 #define SENSOR_IN A0
 #else
 #ifdef TEENSY
-#if defined(TEESNY_V1_0)
+#if defined(TEENSY_V1_0)
 #define AIR_SENSOR_0_PIN 10
 #define AIR_SENSOR_1_PIN 11
 #define AIR_SENSOR_2_PIN 12
@@ -73,7 +73,7 @@
 #define SEND 10
 
 #ifdef TEENSY               // Teensy LC
-#if defined(TEESNY_V1_0)
+#if defined(TEENSY_V1_0)
 #define TOUCH_0 22
 #define TOUCH_1 23
 #elif defined(TEENSY_V1_1)
@@ -86,7 +86,7 @@
 #define LED_TYPE    WS2812B
 #define LED_ORDER   GRB
 #ifdef TEENSY               // Teensy LC
-#if defined(TEESNY_V1_0)
+#if defined(TEENSY_V1_0)
 #define RGBPIN 4
 #elif defined(TEENSY_V1_1)
 #define RGBPIN 11

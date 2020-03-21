@@ -15,15 +15,11 @@
 #define CONFIG_FLAG 0xBB
 
 // config command opcodes
-#define CMD_CHANGE_LIGHT_MODE 0x11
+#define CMD_PRINT_INFO 0x11
 #define CMD_CHANGE_ON_COLOR 0x22
 #define CMD_CHANGE_OFF_COLOR 0x33
 #define CMD_CALIBRATE_SLIDER 0x44
 #define CMD_CALIBRATE_AIR_SENSORS 0x55
-
-// light modes for the change light mode command
-#define LIGHT_MODE_SERIAL 0x00
-#define LIGHT_MODE_REACTIVE 0x01
 
 extern AirSensor *sensor;
 extern AutoTouchboard *touchboard;

@@ -33,7 +33,8 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuComPort = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.mnuFactoryReset = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuExit = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuAbout = new System.Windows.Forms.ToolStripMenuItem();
@@ -50,7 +51,8 @@
             this.btnCalibrateAir = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.trkAirSensitivity = new System.Windows.Forms.TrackBar();
-            this.colorDialog = new System.Windows.Forms.ColorDialog();
+            this.colorDialogOn = new System.Windows.Forms.ColorDialog();
+            this.colorDialogOff = new System.Windows.Forms.ColorDialog();
             this.menuStrip1.SuspendLayout();
             this.grpSliderConfig.SuspendLayout();
             this.grpSliderCalibration.SuspendLayout();
@@ -75,7 +77,8 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuComPort,
-            this.toolStripSeparator1,
+            this.mnuFactoryReset,
+            this.toolStripSeparator2,
             this.mnuExit});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
@@ -85,24 +88,31 @@
             // 
             this.mnuComPort.DropDown = this.contextMenuStrip1;
             this.mnuComPort.Name = "mnuComPort";
-            this.mnuComPort.Size = new System.Drawing.Size(161, 22);
+            this.mnuComPort.Size = new System.Drawing.Size(195, 22);
             this.mnuComPort.Text = "Select COM port";
             // 
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.OwnerItem = this.mnuComPort;
             this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
             // 
-            // toolStripSeparator1
+            // mnuFactoryReset
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(158, 6);
+            this.mnuFactoryReset.Enabled = false;
+            this.mnuFactoryReset.Name = "mnuFactoryReset";
+            this.mnuFactoryReset.Size = new System.Drawing.Size(195, 22);
+            this.mnuFactoryReset.Text = "Factory reset controller";
+            this.mnuFactoryReset.Click += new System.EventHandler(this.factoryResetControllerToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(192, 6);
             // 
             // mnuExit
             // 
             this.mnuExit.Name = "mnuExit";
-            this.mnuExit.Size = new System.Drawing.Size(161, 22);
+            this.mnuExit.Size = new System.Drawing.Size(195, 22);
             this.mnuExit.Text = "Exit";
             // 
             // helpToolStripMenuItem
@@ -173,11 +183,10 @@
             // trkSliderSensitivity
             // 
             this.trkSliderSensitivity.Location = new System.Drawing.Point(6, 38);
-            this.trkSliderSensitivity.Maximum = 100;
+            this.trkSliderSensitivity.Maximum = 25;
             this.trkSliderSensitivity.Name = "trkSliderSensitivity";
             this.trkSliderSensitivity.Size = new System.Drawing.Size(271, 45);
             this.trkSliderSensitivity.TabIndex = 6;
-            this.trkSliderSensitivity.TickFrequency = 5;
             // 
             // grpReactiveLightsConfig
             // 
@@ -193,7 +202,7 @@
             // 
             // btnSliderOnColor
             // 
-            this.btnSliderOnColor.Location = new System.Drawing.Point(6, 23);
+            this.btnSliderOnColor.Location = new System.Drawing.Point(6, 66);
             this.btnSliderOnColor.Name = "btnSliderOnColor";
             this.btnSliderOnColor.Size = new System.Drawing.Size(271, 35);
             this.btnSliderOnColor.TabIndex = 3;
@@ -203,7 +212,7 @@
             // 
             // btnSliderOffColor
             // 
-            this.btnSliderOffColor.Location = new System.Drawing.Point(6, 64);
+            this.btnSliderOffColor.Location = new System.Drawing.Point(6, 23);
             this.btnSliderOffColor.Name = "btnSliderOffColor";
             this.btnSliderOffColor.Size = new System.Drawing.Size(271, 35);
             this.btnSliderOffColor.TabIndex = 4;
@@ -222,7 +231,7 @@
             this.grpAirConfig.Size = new System.Drawing.Size(294, 127);
             this.grpAirConfig.TabIndex = 3;
             this.grpAirConfig.TabStop = false;
-            this.grpAirConfig.Text = "Air sensor configuration (analog controllers only)";
+            this.grpAirConfig.Text = "Air sensor configuration (analog air sensors only)";
             // 
             // btnCalibrateAir
             // 
@@ -246,11 +255,10 @@
             // trkAirSensitivity
             // 
             this.trkAirSensitivity.Location = new System.Drawing.Point(12, 44);
-            this.trkAirSensitivity.Maximum = 100;
+            this.trkAirSensitivity.Maximum = 25;
             this.trkAirSensitivity.Name = "trkAirSensitivity";
             this.trkAirSensitivity.Size = new System.Drawing.Size(271, 45);
             this.trkAirSensitivity.TabIndex = 6;
-            this.trkAirSensitivity.TickFrequency = 5;
             // 
             // MainForm
             // 
@@ -285,7 +293,6 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mnuComPort;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem mnuExit;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mnuAbout;
@@ -303,7 +310,10 @@
         private System.Windows.Forms.Button btnCalibrateAir;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TrackBar trkAirSensitivity;
-        private System.Windows.Forms.ColorDialog colorDialog;
+        private System.Windows.Forms.ColorDialog colorDialogOn;
+        private System.Windows.Forms.ToolStripMenuItem mnuFactoryReset;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ColorDialog colorDialogOff;
     }
 }
 

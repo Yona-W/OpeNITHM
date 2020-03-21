@@ -7,7 +7,14 @@
 #include "WProgram.h"
 #endif
 
+#include <EEPROM.h>
+#include <FastLED.h>
+
+#define LIGHTS_FLAG 0xFF
+
 extern bool updateLeds;
+extern CRGB led_on;
+extern CRGB led_off;
 
 typedef struct {
   uint8_t b;
@@ -22,6 +29,8 @@ class SerialLeds
 
   public:
     SerialLeds();
+    void saveLights();
+    void loadLights();
     void processBulk(uint8_t *buf);
     RGBLed getKey(uint8_t key); // Left to Right
 

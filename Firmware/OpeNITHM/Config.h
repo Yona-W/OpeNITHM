@@ -7,7 +7,7 @@
 // *** USER EDITABLE CONFIG OPTIONS ***
 
 // Select which board you're using (ignore if not using Teensy)
-#define TEESNY_V1_0   // Version 1.0 (No version number on board)
+#define TEENSY_V1_0   // Version 1.0 (No version number on board)
 //#define TEENSY_V1_1   // Version 1.1 (v1.1 on board under logo)
 
 // Uncomment this line to force the processor to use Serial Output
@@ -50,9 +50,9 @@
 #endif
 
 // Spit out errors for board definitions
-#if !defined(TEESNY_V1_0) && !defined(TEENSY_V1_1)
+#if !defined(TEENSY_V1_0) && !defined(TEENSY_V1_1)
 #error "For Teensy, EITHER v1.0 OR v1.1 must be defined in Config.h"
-#elif defined(TEESNY_V1_0) && defined(TEENSY_V1_1)
+#elif defined(TEENSY_V1_0) && defined(TEENSY_V1_1)
 #error "For Teensy, cannot define BOTH v1.0 AND v1.1 in Config.h"
 #endif
 #endif

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using System.IO.Ports;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace OpeNITHMConfig
@@ -11,15 +13,22 @@ namespace OpeNITHMConfig
         private const byte CONFIG_FLAG = 0xBB;
 
         // config command opcodes
-        private const byte CMD_CHANGE_LIGHT_MODE = 0x11;
+        private const byte CMD_PRINT_INFO = 0x11;
         private const byte CMD_CHANGE_ON_COLOR = 0x22;
         private const byte CMD_CHANGE_OFF_COLOR = 0x33;
         private const byte CMD_CALIBRATE_SLIDER = 0x44;
         private const byte CMD_CALIBRATE_AIR_SENSORS = 0x55;
+        private const byte CMD_FACTORY_RESET = 0x66;
 
-        // light modes for the change light mode command
-        private const byte LIGHT_MODE_SERIAL = 0x00;
-        private const byte LIGHT_MODE_REACTIVE = 0x01;
+        // the "maximum" sensitivity values, that we subtract the value of the sensitivity slider from
+        // to send to the controller. lower values sent to the controller result in higher sensitivity
+        // so we do the subtraction
+        private const int MAX_SLIDER_SENSITIVITY = 95;
+        private const int MAX_AIR_SENSITIVITY = 55;
+
+        // default values for the sensitivity sliders
+        private const int DEFAULT_TOUCH_SENSITIVITY = 15;
+        private const int DEFAULT_AIR_SENSITIVITY = 15;
 
         /// <summary>
         /// Whether or not the controller is connected
@@ -55,7 +64,13 @@ namespace OpeNITHMConfig
         {
             grpSliderConfig.Enabled = true;
             grpReactiveLightsConfig.Enabled = true;
-            grpAirConfig.Enabled = analogAirSensors;
+            mnuFactoryReset.Enabled = true;
+
+            if (analogAirSensors)
+            {
+                grpAirConfig.Enabled = true;
+                grpAirConfig.Text = "Air sensor configuration";
+            }
         }
 
         /// <summary>
@@ -65,18 +80,9 @@ namespace OpeNITHMConfig
         {
             grpSliderConfig.Enabled = false;
             grpReactiveLightsConfig.Enabled = false;
+            mnuFactoryReset.Enabled = false;
             grpAirConfig.Enabled = false;
-        }
-
-        /// <summary>
-        /// Connects to a new controller and initializes our values
-        /// </summary>
-        /// <param name="port"></param>
-        private void ConnectToController(string port)
-        {
-            serialPort.PortName = port;
-            isConnected = true;
-            enableControls(true);
+            grpAirConfig.Text = "Air sensor configuration (analog air sensors only)";
         }
 
         /// <summary>
@@ -84,7 +90,8 @@ namespace OpeNITHMConfig
         /// </summary>
         /// <param name="command"></param>
         /// <param name="args"></param>
-        private void sendCommand(byte command, byte[] args)
+        /// <param name="close"></param>
+        private void sendCommand(byte command, byte[] args, bool close = true)
         {
             try
             {
@@ -105,13 +112,54 @@ namespace OpeNITHMConfig
                     // send the data
                     serialPort.Open();
                     serialPort.Write(data, 0, 100);
-                    serialPort.Close();
+
+                    if (close)
+                        serialPort.Close();
                 }
             }
             catch (InvalidOperationException)
             {
                 // serial port was likely closed
                 isConnected = false;
+                disableControls();
+            }
+        }
+
+        /// <summary>
+        /// Connects to a new controller and initializaes our values
+        /// </summary>
+        /// <param name="port"></param>
+        /// <param name="sender"></param>
+        private void ConnectToController(string port, ToolStripMenuItem sender)
+        {
+            serialPort.PortName = port;
+
+            // get the current info from the controller
+            isConnected = true;
+            //enableControls(false);
+            sendCommand(CMD_PRINT_INFO, new byte[]{}, false);
+            Thread.Sleep(500);
+
+            byte[] info = new byte[100];
+
+            try
+            {
+                serialPort.Read(info, 0, 100);
+                serialPort.Close();
+
+                bool isAnalogAir = (info[0] == 0x11);
+                colorDialogOn.Color = Color.FromArgb(info[1], info[2], info[3]);
+                colorDialogOff.Color = Color.FromArgb(info[4], info[5], info[6]);
+                trkSliderSensitivity.Value = MAX_SLIDER_SENSITIVITY - info[7];
+                trkAirSensitivity.Value = MAX_AIR_SENSITIVITY - info[8];
+                
+                enableControls(isAnalogAir);
+            }
+            catch (TimeoutException ex)
+            {
+                // serial timeout, don't enable anything
+                isConnected = false;
+                sender.Enabled = false;
                 disableControls();
             }
         }
@@ -135,12 +183,12 @@ namespace OpeNITHMConfig
         /// <param name="e"></param>
         private void btnSliderOnColor_Click(object sender, EventArgs e)
         {
-            if (colorDialog.ShowDialog() == DialogResult.OK)
+            if (colorDialogOn.ShowDialog() == DialogResult.OK)
             {
                 sendCommand(CMD_CHANGE_ON_COLOR, new byte[] {
-                    colorDialog.Color.R,
-                    colorDialog.Color.G,
-                    colorDialog.Color.B
+                    colorDialogOn.Color.R,
+                    colorDialogOn.Color.G,
+                    colorDialogOn.Color.B
                 });
             }
         }
@@ -152,12 +200,12 @@ namespace OpeNITHMConfig
         /// <param name="e"></param>
         private void btnSliderOffColor_Click(object sender, EventArgs e)
         {
-            if (colorDialog.ShowDialog() == DialogResult.OK)
+            if (colorDialogOff.ShowDialog() == DialogResult.OK)
             {
                 sendCommand(CMD_CHANGE_OFF_COLOR, new byte[] {
-                    colorDialog.Color.R,
-                    colorDialog.Color.G,
-                    colorDialog.Color.B
+                    colorDialogOff.Color.R,
+                    colorDialogOff.Color.G,
+                    colorDialogOff.Color.B
                 });
             }
         }
@@ -169,7 +217,7 @@ namespace OpeNITHMConfig
         /// <param name="e"></param>
         private void btnCalibrateSlider_Click(object sender, EventArgs e)
         {
-            sendCommand(CMD_CALIBRATE_SLIDER, new byte[] { (byte) trkSliderSensitivity.Value });
+            sendCommand(CMD_CALIBRATE_SLIDER, new byte[] { (byte) (MAX_SLIDER_SENSITIVITY - trkSliderSensitivity.Value) });
         }
 
         /// <summary>
@@ -179,7 +227,7 @@ namespace OpeNITHMConfig
         /// <param name="e"></param>
         private void btnCalibrateAir_Click(object sender, EventArgs e)
         {
-            sendCommand(CMD_CALIBRATE_AIR_SENSORS, new byte[] { (byte) trkAirSensitivity.Value });
+            sendCommand(CMD_CALIBRATE_AIR_SENSORS, new byte[] { (byte) (MAX_AIR_SENSITIVITY - trkAirSensitivity.Value) });
         }
 
         /// <summary>
@@ -204,8 +252,8 @@ namespace OpeNITHMConfig
                     // set the click handler for the menu items
                     ToolStripItem item = new ToolStripMenuItem(port, null, new EventHandler(delegate (Object o, EventArgs a)
                     {
-                        ConnectToController(((ToolStripItem)o).Text);
-                        ((ToolStripMenuItem)o).Checked = true;
+                        ConnectToController(((ToolStripItem) o).Text, (ToolStripMenuItem) o);
+                        ((ToolStripMenuItem) o).Checked = true;
                     }));
 
                     mnuComPort.DropDownItems.Add(item);
@@ -219,6 +267,16 @@ namespace OpeNITHMConfig
                 isConnected = false;
                 disableControls();
             }
+        }
+
+        /// <summary>
+        /// Clears the controller's EEPROM and re-initializes the default settings / goes through calibration again
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void factoryResetControllerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

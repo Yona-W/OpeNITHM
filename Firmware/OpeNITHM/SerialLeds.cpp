@@ -3,6 +3,25 @@
 SerialLeds::SerialLeds()
 { }
 
+void SerialLeds::saveLights() {
+  EEPROM.put(67, (byte) LIGHTS_FLAG);
+  EEPROM.put(68, led_on.r);
+  EEPROM.put(69, led_on.g);
+  EEPROM.put(70, led_on.b);
+  EEPROM.put(71, led_off.r);
+  EEPROM.put(72, led_off.g);
+  EEPROM.put(73, led_off.b);
+}
+
+void SerialLeds::loadLights() {
+  EEPROM.get(68, led_on.r);
+  EEPROM.get(69, led_on.g);
+  EEPROM.get(70, led_on.b);
+  EEPROM.get(71, led_off.r);
+  EEPROM.get(72, led_off.g);
+  EEPROM.get(73, led_off.b);
+}
+
 void SerialLeds::processBulk(uint8_t *buf)
 {
   if (memcmp(buf + 2, lastBuffer + 2, 98) != 0)

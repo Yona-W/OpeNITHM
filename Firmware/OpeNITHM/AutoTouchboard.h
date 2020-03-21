@@ -14,7 +14,8 @@
 
 #define CALIBRATION_SAMPLES 25
 #define CALIBRATION_DETECTION_THRESHOLD 55
-#define CALIBRATION_FLAG 0xFFFF
+#define CALIBRATION_FLAG 0xFF
+#define DEFAULT_SENSITIVITY 80
 
 extern CRGB leds[16];
 
@@ -38,6 +39,7 @@ class AutoTouchboard
     uint16_t getRawValue(int key);
     void calibrateKeys(bool forceCalibrate = false);
     void setSensitivity(uint8_t sensitivity);
+    uint8_t getSensitivity();
 };
 
 #endif

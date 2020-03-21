@@ -8,32 +8,45 @@ void SerialProcessor::processConfigCommand(uint8_t* buf)
   // figure out which command we're running
   switch (buf[2]) 
   {
-    case CMD_CHANGE_LIGHT_MODE:
-      if (buf[3] == LIGHT_MODE_SERIAL)
-      {
-        useSerialLeds = true;
+    // print the controller info
+    case CMD_PRINT_INFO:
+      byte bytes[100];
+      
+          // whether the air sensor is analog or not
+#ifdef IR_SENSOR_ANALOG
+      bytes[0] = 0x11;
+#else
+      bytes[0] = 0x00;
+#endif
+      // slider on color
+      bytes[1] = led_on.r;
+      bytes[2] = led_on.g;
+      bytes[3] = led_on.b;
+      
+      // slider off color
+      bytes[4] = led_off.r;
+      bytes[5] = led_off.g;
+      bytes[6] = led_off.b;
+      
+      // slider sensitivity
+      bytes[7] = touchboard->getSensitivity();
+      
+      // air sensitivity
+      bytes[8] = sensor->getAnalogSensitivity();
 
-        // Set LEDs blue for "ready"
-        for (CRGB& led : leds)
-          led = CRGB::Blue;
-          
-        FastLED.show();
-      }
-      else if (buf[3] == LIGHT_MODE_REACTIVE)
-      {
-        useSerialLeds = false;
-      }
-        
+      Serial.write(bytes, 100);
       break;
     case CMD_CHANGE_ON_COLOR:
       led_on.r = buf[3];
       led_on.g = buf[4];
       led_on.b = buf[5];
+      serialLeds->saveLights();
       break;
     case CMD_CHANGE_OFF_COLOR:
       led_off.r = buf[3];
       led_off.g = buf[4];
       led_off.b = buf[5];
+      serialLeds->saveLights();
       break;
     case CMD_CALIBRATE_SLIDER:
       touchboard->setSensitivity(buf[3]);

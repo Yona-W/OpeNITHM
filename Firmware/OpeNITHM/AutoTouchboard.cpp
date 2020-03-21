@@ -39,7 +39,7 @@ void AutoTouchboard::saveConfig()
     EEPROM.put((i * 2) + 32, double_thresholds[i]);
   }
 
-  EEPROM.put(64, CALIBRATION_FLAG);
+  EEPROM.put(64, (byte) CALIBRATION_FLAG);
 }
 
 void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
@@ -49,7 +49,7 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
   //   * the calibration flag is not set in EEPROM
   bool needsCalibration = forceCalibrate;
   
-  int calibrationFlag;
+  byte calibrationFlag;
   EEPROM.get(64, calibrationFlag);
 
   // only check the last 4 keys if we've calibrated at least once
@@ -179,6 +179,12 @@ uint16_t AutoTouchboard::getRawValue(int key)
 void AutoTouchboard::setSensitivity(uint8_t sensitivity)
 {
   this->sensitivity = sensitivity;
+  EEPROM.put(65, sensitivity);
+}
+
+uint8_t AutoTouchboard::getSensitivity()
+{
+  return sensitivity;
 }
 
 AutoTouchboard::AutoTouchboard()
@@ -189,7 +195,11 @@ AutoTouchboard::AutoTouchboard()
   pinMode(MUX_0, OUTPUT);
   pinMode(MUX_1, OUTPUT);
   pinMode(MUX_2, OUTPUT);
-  sensitivity = 76;
+
+  EEPROM.get(65, sensitivity);
+  
+  if (sensitivity == 0)
+    setSensitivity(DEFAULT_SENSITIVITY);
 
   calibrateKeys();
 }

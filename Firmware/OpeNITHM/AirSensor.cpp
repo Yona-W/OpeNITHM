@@ -135,7 +135,10 @@ AirSensor::AirSensor(int requiredSamples, int skippedSamples) : thresholds{ 1000
     }
   }
 
-  analogSensitivity = 40;
+  EEPROM.get(66, analogSensitivity);
+
+  if (analogSensitivity == 0)
+    setAnalogSensitivity(DEFAULT_SENSITIVITY);
 }
 
 // Check if all IR sensors are calibrated. If they are, set a flag to not need to re-check it
@@ -225,10 +228,12 @@ float AirSensor::getHandPosition()
 uint8_t AirSensor::getSensorReadings()
 {
   uint8_t reading = 0;
+  
   for (int i = 0; i < 6; i++)
   {
     reading |= ((int)getSensorState(i) << i);
   }
+  
   return reading;
 }
 
@@ -240,6 +245,12 @@ bool AirSensor::getSensorCalibrated(int i)
 void AirSensor::setAnalogSensitivity(uint8_t analogSensitivity)
 {
   this->analogSensitivity = analogSensitivity;
+  EEPROM.put(66, analogSensitivity);
+}
+
+uint8_t AirSensor::getAnalogSensitivity()
+{
+  return analogSensitivity;
 }
 
 void AirSensor::recalibrate()

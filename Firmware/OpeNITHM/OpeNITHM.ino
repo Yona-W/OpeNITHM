@@ -21,8 +21,8 @@ bool updateLeds = false;
 bool useSerialLeds = false;
 int serialLightsCounter;
 
-CRGB led_on = CRGB::Purple;
-CRGB led_off = CRGB::Yellow;
+CRGB led_on;
+CRGB led_off;
 
 float lightIntensity[16];
 bool activated = true;
@@ -57,6 +57,21 @@ void setup() {
 
   // Initialize the serial LED processor
   serialLeds = new SerialLeds();
+
+  // Initialize the reactive lighting colors, and if they're not in EEPROM, save them
+  byte lightsFlag;
+  EEPROM.get(67, lightsFlag);
+
+  if (lightsFlag == LIGHTS_FLAG) 
+  {
+    serialLeds->loadLights();
+  } 
+  else 
+  {
+    led_on = CRGB::Purple;
+    led_off = CRGB::Yellow;
+    serialLeds->saveLights();
+  }
 
   // Initialize air sensor
   // Digital mode calibrations in the constructor
