@@ -16,7 +16,7 @@ SerialProcessor serialProcessor;
 
 KeyState key_states[16];
 CRGB leds[16];
-byte serialBuffer[100];
+byte serialBuffer[200];
 bool updateLeds = false;
 bool useSerialLeds = false;
 int serialLightsCounter;
@@ -115,9 +115,9 @@ void initializeController() {
 
 void loop() {
   // Check for serial messages
-  if (Serial.available() >= 100)
+  if (Serial.available() >= 200)
   {
-    Serial.readBytes(serialBuffer, 100);
+    Serial.readBytes(serialBuffer, 200);
     serialProcessor.processBulk(serialBuffer);
   }
   else 

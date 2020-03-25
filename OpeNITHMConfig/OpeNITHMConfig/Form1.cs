@@ -27,7 +27,7 @@ namespace OpeNITHMConfig
         private const int MAX_AIR_SENSITIVITY = 55;
 
         // default values for the sensitivity sliders
-        private const int DEFAULT_TOUCH_SENSITIVITY = 15;
+        private const int DEFAULT_TOUCH_SENSITIVITY = 19;
         private const int DEFAULT_AIR_SENSITIVITY = 15;
 
         // default key colors
@@ -101,7 +101,7 @@ namespace OpeNITHMConfig
             {
                 if (isConnected)
                 {
-                    byte[] data = new byte[100];
+                    byte[] data = new byte[200];
 
                     // command header
                     data[0] = CONFIG_FLAG;
@@ -115,7 +115,7 @@ namespace OpeNITHMConfig
 
                     // send the data
                     serialPort.Open();
-                    serialPort.Write(data, 0, 100);
+                    serialPort.Write(data, 0, 200);
 
                     if (close)
                         serialPort.Close();
@@ -144,11 +144,11 @@ namespace OpeNITHMConfig
             sendCommand(CMD_PRINT_INFO, new byte[]{}, false);
             Thread.Sleep(500);
 
-            byte[] info = new byte[100];
+            byte[] info = new byte[200];
 
             try
             {
-                serialPort.Read(info, 0, 100);
+                serialPort.Read(info, 0, 200);
                 serialPort.Close();
 
                 bool isAnalogAir = (info[0] == 0x11);

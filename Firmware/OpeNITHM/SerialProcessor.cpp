@@ -10,7 +10,7 @@ void SerialProcessor::processConfigCommand(uint8_t* buf)
   {
     // print the controller info
     case CMD_PRINT_INFO:
-      byte bytes[100];
+      byte bytes[200];
       
           // whether the air sensor is analog or not
 #ifdef IR_SENSOR_ANALOG
@@ -34,7 +34,7 @@ void SerialProcessor::processConfigCommand(uint8_t* buf)
       // air sensitivity
       bytes[8] = sensor->getAnalogSensitivity();
 
-      Serial.write(bytes, 100);
+      Serial.write(bytes, 200);
       break;
     case CMD_CHANGE_ON_COLOR:
       led_on.r = buf[3];
