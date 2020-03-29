@@ -134,14 +134,17 @@ AirSensor::AirSensor(int requiredSamples, int skippedSamples) : thresholds{ 1000
     }
   }
   else 
-  {
+  { 
+    
+    EEPROM.get(66, analogSensitivity);
+
+    if (analogSensitivity == 0 || analogSensitivity >= 100)
+      setAnalogSensitivity(DEFAULT_SENSITIVITY);
+      
     analogCalibrate();
   }
 
-  EEPROM.get(66, analogSensitivity);
-
-  if (analogSensitivity == 0)
-    setAnalogSensitivity(DEFAULT_SENSITIVITY);
+ 
 }
 
 void AirSensor::analogCalibrate() 
