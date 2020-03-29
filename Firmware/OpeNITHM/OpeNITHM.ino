@@ -82,8 +82,6 @@ void initializeController() {
   }
 
   // Initialize air sensor
-  // Digital mode calibrations in the constructor
-  // Analog mode will automatically calibrate as it starts being read
   if (sensor != NULL) delete sensor;
   sensor = new AirSensor(500, 50);
 

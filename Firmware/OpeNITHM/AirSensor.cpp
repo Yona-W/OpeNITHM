@@ -94,7 +94,7 @@ int AirSensor::getValue(int sensor, bool light)
   }
 
   // Delay required because the read may occur faster than the physical light turning on
-  delayMicroseconds(150);
+  delayMicroseconds(125);
 
 #ifdef IR_SENSOR_MULTIPLEXED
   // Set multiplexer to corresponding sensor
@@ -115,7 +115,7 @@ int AirSensor::getValue(int sensor, bool light)
 }
 
 
-AirSensor::AirSensor(int requiredSamples, int skippedSamples) : thresholds{ 10000, 10000, 10000, 10000, 10000, 10000 }, calibrationSamples{ 0, 0, 0, 0, 0, 0 }, skippedSamples{ 0, 0, 0, 0, 0, 0 }, samplesToAcquire(requiredSamples), samplesToSkip(skippedSamples), calibrated{ 0, 0, 0, 0, 0, 0 }, allCalibrated(false)
+AirSensor::AirSensor(int requiredSamples, int skippedSamples) : thresholds{ 10000, 10000, 10000, 10000, 10000, 10000 }, samplesToAcquire(requiredSamples), samplesToSkip(skippedSamples), calibrated{ 0, 0, 0, 0, 0, 0 }
 {
 #ifdef IR_SENSOR_ANALOG
   digitalMode = false;
@@ -125,7 +125,6 @@ AirSensor::AirSensor(int requiredSamples, int skippedSamples) : thresholds{ 1000
 
   if (digitalMode)
   {
-    // Digital mode runs calibration in the constructor
     for (int i = 0; i < 6; i++)
     {
 #ifndef IR_SENSOR_MULTIPLEXED
@@ -134,6 +133,10 @@ AirSensor::AirSensor(int requiredSamples, int skippedSamples) : thresholds{ 1000
       calibrated[i] = getValue(i, true);
     }
   }
+  else 
+  {
+    analogCalibrate();
+  }
 
   EEPROM.get(66, analogSensitivity);
 
@@ -141,22 +144,48 @@ AirSensor::AirSensor(int requiredSamples, int skippedSamples) : thresholds{ 1000
     setAnalogSensitivity(DEFAULT_SENSITIVITY);
 }
 
-// Check if all IR sensors are calibrated. If they are, set a flag to not need to re-check it
+void AirSensor::analogCalibrate() 
+{
+#ifdef IR_SENSOR_ANALOG
+  for (int sensor = 0; sensor < 6; sensor++)
+  {
+    // first, skip samplesToSkip number of readings
+    for (int i = 0; i < samplesToSkip; i++)
+    {
+      getValue(sensor, true);
+      turnOffLight();
+    }
+    
+    // now gather the calibration samples for this sensor
+    for (int i = 0; i < samplesToAcquire; i++)
+    {
+      int value = getValue(sensor, true);
+      turnOffLight();
+
+      //keep the minimum value seen by the sensor
+      if (value < thresholds[sensor])
+        thresholds[sensor] = value;
+    }
+
+    // consider the sensor calibrated, finalize calibration for this sensor.
+    calibrated[sensor] = true;
+    thresholds[sensor] *= (analogSensitivity / 100.0f);
+  }
+#endif
+}
+
 bool AirSensor::isCalibrated()
 {
 #ifdef IGNORE_AIR_CALIBRATION
   return true;
 #else
-  if (!allCalibrated)
-  {
     for (int i = 0; i < 6; i++)
     {
       if (!calibrated[i])
         return false;
     }
-    allCalibrated = true;
-  }
-  return allCalibrated;
+    
+    return true;
 #endif
 }
 
@@ -171,35 +200,12 @@ bool AirSensor::getSensorState(int sensor) {
   }
   else 
   {
-    if (allCalibrated || calibrated[sensor]) 
+    if (calibrated[sensor]) 
     {
-      sensorValues[sensor] = value;
-      return sensorValues[sensor] < thresholds[sensor];
+      return value < thresholds[sensor];
     } 
     else 
     {
-      // If it is not calibrated, perform calibration
-      // Skip the first few samples
-      if (skippedSamples[sensor] > samplesToSkip) 
-      {
-        // Keep the minimum value seen by the sensor
-        if (value < thresholds[sensor])
-          thresholds[sensor] = value;
-        
-        // If we have enough samples:
-        if (++calibrationSamples[sensor] > samplesToAcquire) 
-        {
-          // Consider the sensor calibrated. Finalize calibration for this sensor.
-          sensorValues[sensor] = value;
-          calibrated[sensor] = true;
-          thresholds[sensor] *= (analogSensitivity / 100.0f);
-        }
-      } 
-      else 
-      {
-        skippedSamples[sensor]++;
-      }
-      
       return false;
     }
   }
@@ -258,11 +264,6 @@ void AirSensor::recalibrate()
   for (int i = 0; i < 6; i++)
   {
     thresholds[i] = 0;
-    calibrationSamples[i] = 0;
-    skippedSamples[i] = 0;
-    sensorValues[i] = 0;
     calibrated[i] = false;
   }
-  
-  allCalibrated = false;
 }

@@ -12,7 +12,7 @@
 #include "PinConfig.h"
 #include <EEPROM.h>
 
-#define DEFAULT_SENSITIVITY 40
+#define DEFAULT_SENSITIVITY 85
 
 class AirSensor
 {
@@ -22,18 +22,15 @@ class AirSensor
 
     uint8_t analogSensitivity;
     int thresholds[6];
-    int calibrationSamples[6];
-    int skippedSamples[6];
-    float sensorValues[6];
     int samplesToAcquire;
     int samplesToSkip;
 
     bool calibrated[6];
-    bool allCalibrated;
     bool digitalMode;
     
   public:
     AirSensor(int requiredSamples, int skippedSamples);
+    void analogCalibrate();
     bool isCalibrated();
     bool isDigital();
     bool getSensorState(int sensor);
