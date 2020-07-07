@@ -2,37 +2,7 @@
 
 This repository contails files related to OpeNITHM.
 
-Firmware, schematics, board layout, and CAD files are included in this repo.
-
-## List of Hardware
-
-In the `CAD\STL` folder, you will find numerous parts that must be 3D printed.
-
-| Part | Qty |
-| --- |:---:|
-| Center Frame | 1 |
-| Right Frame | 1 |
-| Left Frame | 1 |
-| Key **OR** Key-US_Cust<sup>1</sup> | 16 |
-| LED Clamp | 16 |
-| Sensor Rail | 2 |
-| Sensor Spacer Left<sup>2</sup> | 1 |
-| Sensor Base Left<sup>2</sup> **OR** Integrated Sensor Base Left<sup>2</sup> | 1 |
-| Sensor Cover Left<sup>2</sup> | 1 |
-| Integrated Frame Mount Left<sup>2,3</sup> | 1 |
-
-**NOTES:** 
-1. "Key" is designed for 3mm acrylic, "Key-US_Cust" is designed for 1/8" acrylic
-2. Print out mirrored version of these parts as well.
-3. Only print the frame mount if you are using the integrated sensor.
-
-You will also need the following hardware:
-
-| Part                                                                       | Qty |
-| --- |:---:|
-| 4-40 Flat Head Screw, length 3/16" to 5/16" will work **OR** M3 equivalent | 2   |
-| Acrylic Rectangles, 90mm x 26mm, Thickness 3mm **OR** 1/8"                 | 16  |
-| Copper Tape, cut into rectangles 95mm x 26mm                               | 16  |
+Firmware, schematics, board layout, and CAD files are included in this repo. Please see the CAD directory for the original 3d printed version, or the v2-cad directory for the laser cut version. 
 
 ## List of Electronics
 

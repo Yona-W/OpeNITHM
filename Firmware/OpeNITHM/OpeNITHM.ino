@@ -10,12 +10,17 @@
 #include "AutoTouchboard.h"
 #include "SerialLeds.h"
 #include "SerialProcessor.h"
+#include "HelperClass.h"
 #include <FastLED.h>
 
 SerialProcessor serialProcessor;
 
 KeyState key_states[16];
+#ifndef KEY_DIVIDERS
 CRGB leds[16];
+#else
+CRGB leds[31];
+#endif
 byte serialBuffer[200];
 bool updateLeds = false;
 bool useSerialLeds = false;
@@ -36,9 +41,17 @@ void initializeController();
 
 void setup() {
   Serial.begin(115200);
+  #ifndef KEY_DIVIDERS
   FastLED.addLeds<LED_TYPE, RGBPIN, LED_ORDER>(leds, 16);
+  #else
+  //Uncomment and tune this value if you're having power issues
+  //FastLED.setMaxPowerInVoltsAndMilliamps(5,5OO);
+  FastLED.addLeds<LED_TYPE, RGBPIN, LED_ORDER>(leds, 31);
+  #endif
 
   initializeController();
+  // Uncomment this to clear EEPROM, flash once, then comment and re-flash
+  //for(int i = 0; i < 128; i++) EEPROM.put(i, 0);
 }
 
 void initializeController() {
@@ -92,9 +105,17 @@ void initializeController() {
   for (int i = 0; i < 6; i++)
   {
     if (sensor->getSensorCalibrated(i))
+#ifndef KEY_DIVIDERS
       leds[i] = CRGB::Green;
+#else
+      leds[i*2] = CRGB::Green;
+#endif
     else
+#ifndef KEY_DIVIDERS
       leds[i] = CRGB::Red;
+#else
+      leds[i*2] = CRGB::Red;
+#endif
   }
   
   FastLED.show();
@@ -155,14 +176,27 @@ void loop() {
       if (keyState == SINGLE_PRESS || keyState == DOUBLE_PRESS)
       {
         lightIntensity[index] = 1.0f;
+#ifndef KEY_DIVIDERS
         leds[index].setRGB(min(led_on.r / 2 + led_on.r / 2 * lightIntensity[index], 255), min(led_on.g / 2 + led_on.g / 2 * lightIntensity[index], 255), min(led_on.b / 2 + led_on.b / 2 * lightIntensity[index], 255));
+#else
+        leds[index*2].setRGB(min(led_on.r / 2 + led_on.r / 2 * lightIntensity[index], 255), min(led_on.g / 2 + led_on.g / 2 * lightIntensity[index], 255), min(led_on.b / 2 + led_on.b / 2 * lightIntensity[index], 255));
+#endif
       }
       else
       {
         // If not, make it the off color
+#ifndef KEY_DIVIDERS
         leds[index].setRGB(led_off.r / 2, led_off.g / 2, led_off.b / 2);
+#else
+        leds[index*2].setRGB(led_off.r / 2, led_off.g / 2, led_off.b / 2);
+#endif
       }
-      
+
+#ifdef KEY_DIVIDERS     
+      lightIntensity[index] = 1.0f;
+      leds[index*2-1].setRGB(min(led_on.r / 2 + led_on.r / 2 * lightIntensity[index], 255), min(led_on.g / 2 + led_on.g / 2 * lightIntensity[index], 255), min(led_on.b / 2 + led_on.b / 2 * lightIntensity[index], 255));
+#endif
+
       updateLeds = true;  
     }
     // handle changing key colors for serial LED updates
@@ -171,7 +205,16 @@ void loop() {
       if (updateLeds)
       {
         RGBLed temp = serialLeds->getKey(i);
+#ifndef KEY_DIVIDERS
         leds[index].setRGB(temp.r, temp.g, temp.b);
+#else
+        leds[index*2].setRGB(temp.r, temp.g, temp.b);
+        if (i < 15){
+          temp = serialLeds->getDivider(i);
+          index = HelperClass::getDividerIndex(i);
+          leds[index].setRGB(temp.r, temp.g, temp.b);
+        }
+#endif
       }
     }
 

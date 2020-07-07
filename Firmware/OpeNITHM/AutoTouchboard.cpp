@@ -89,7 +89,11 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
     {
       for (int j = 0; j < 16; j++)
       {
-        leds[j] = CRGB::Red;
+#ifndef KEY_DIVIDERS
+        leds[j] = CRGB::Red; 
+#else
+        leds[j*2] = CRGB::Red;
+#endif
       }
 
       FastLED.show();
@@ -97,7 +101,11 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
 
       for (int j = 0; j < 16; j++)
       {
-        leds[j] = CRGB::Purple;
+#ifndef KEY_DIVIDERS
+        leds[j] = CRGB::Purple; 
+#else
+        leds[j*2] = CRGB::Purple;
+#endif
       }
 
       FastLED.show();
@@ -123,7 +131,11 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
     // and doubles
     for (int i = 0; i < 16; i++) 
     {
-      leds[i] = CRGB::Red;
+#ifndef KEY_DIVIDERS
+        leds[i] = CRGB::Red; 
+#else
+        leds[i*2] = CRGB::Red;
+#endif
       FastLED.show();
   
       // wait until we detect a touch, then start measuring to determine the average
@@ -132,7 +144,11 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
         scan();
       }
   
-      leds[i] = CRGB::Blue;
+#ifndef KEY_DIVIDERS
+        leds[i] = CRGB::Blue; 
+#else
+        leds[i*2] = CRGB::Blue;
+#endif      
       FastLED.show();
       
       for (int j = 0; j < CALIBRATION_SAMPLES; j++) 
@@ -140,7 +156,11 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
         scan();
       }
   
-      leds[i] = CRGB::Green;
+#ifndef KEY_DIVIDERS
+        leds[i] = CRGB::Green; 
+#else
+        leds[i*2] = CRGB::Green;
+#endif
       FastLED.show();
   
       uint16_t window = (key_values[i] - baselines[i]) * (sensitivity / 100.0f);
@@ -155,7 +175,11 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
     // just set the keys green
     for (int i = 0; i < 16; i++) 
     {
-      leds[i] = CRGB::Green;
+#ifndef KEY_DIVIDERS
+        leds[i] = CRGB::Green; 
+#else
+        leds[i*2] = CRGB::Green;
+#endif
       FastLED.show();
     }
   }

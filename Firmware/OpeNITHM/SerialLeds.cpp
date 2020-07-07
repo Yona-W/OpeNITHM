@@ -33,8 +33,18 @@ void SerialLeds::processBulk(uint8_t *buf)
   memcpy(lastBuffer, buf, 100);
 }
 
-// Left to Right
+// Left to Right, zero index
 RGBLed SerialLeds::getKey(uint8_t key)
 {
+  if (key > 15)
+    key = 15;
   return ledData.rgb[30 - (key * 2)];
+}
+
+// Left to Right, zero index
+RGBLed SerialLeds::getDivider(uint8_t divider)
+{
+  if (divider > 14)
+    divider = 14;
+  return ledData.rgb[29 - (divider * 2)];
 }

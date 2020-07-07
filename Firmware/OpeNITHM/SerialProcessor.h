@@ -26,7 +26,11 @@ extern AirSensor *sensor;
 extern AutoTouchboard *touchboard;
 extern SerialLeds *serialLeds;
 extern bool useSerialLeds;
+#ifndef KEY_DIVIDERS
 extern CRGB leds[16];
+#else
+extern CRGB leds[31];
+#endif
 extern CRGB led_on;
 extern CRGB led_off;
 extern int serialLightsCounter;

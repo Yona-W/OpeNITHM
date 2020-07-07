@@ -17,7 +17,11 @@
 #define CALIBRATION_FLAG 0xFF
 #define DEFAULT_SENSITIVITY 76
 
+#ifndef KEY_DIVIDERS
 extern CRGB leds[16];
+#else
+extern CRGB leds[31];
+#endif
 
 class AutoTouchboard
 {
