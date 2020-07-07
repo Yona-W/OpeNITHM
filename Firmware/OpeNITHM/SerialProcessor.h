@@ -8,6 +8,8 @@
 #include "Config.h"
 #include "SerialLeds.h"
 
+#include <WS2812Serial.h>
+#define USE_WS2812SERIAL
 #include <FastLED.h>
 
 // magic bytes we look for in the packet headers to identify whether it's LED updates or config commands

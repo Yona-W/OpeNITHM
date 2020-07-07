@@ -11,6 +11,9 @@
 #include "SerialLeds.h"
 #include "SerialProcessor.h"
 #include "HelperClass.h"
+
+#include <WS2812Serial.h>
+#define USE_WS2812SERIAL
 #include <FastLED.h>
 
 SerialProcessor serialProcessor;
@@ -25,6 +28,10 @@ byte serialBuffer[200];
 bool updateLeds = false;
 bool useSerialLeds = false;
 int serialLightsCounter;
+long lastMillis = 0;
+int pollCount = 0;
+int maxPollCount = 0;
+int minPollCount = 1000;
 
 CRGB led_on;
 CRGB led_off;
@@ -45,13 +52,15 @@ void setup() {
   FastLED.addLeds<LED_TYPE, RGBPIN, LED_ORDER>(leds, 16);
   #else
   //Uncomment and tune this value if you're having power issues
-  //FastLED.setMaxPowerInVoltsAndMilliamps(5,5OO);
+  FastLED.setBrightness(170);
   FastLED.addLeds<LED_TYPE, RGBPIN, LED_ORDER>(leds, 31);
   #endif
 
-  initializeController();
   // Uncomment this to clear EEPROM, flash once, then comment and re-flash
   //for(int i = 0; i < 128; i++) EEPROM.put(i, 0);
+  
+  initializeController();
+  lastMillis = millis();
 }
 
 void initializeController() {
@@ -96,7 +105,7 @@ void initializeController() {
 
   // Initialize air sensor
   if (sensor != NULL) delete sensor;
-  sensor = new AirSensor(500, 50);
+  sensor = new AirSensor(2000, 200);
 
   // Display the number of air sensors that were calibrated
   for (CRGB& led : leds)
@@ -132,11 +141,35 @@ void initializeController() {
 #endif
 }
 
-void loop() {
-  // Check for serial messages
-  if (Serial.available() >= 200)
+void checkPollRate() {
+  pollCount++;
+  
+  if ((millis() - lastMillis) > 1000)
   {
-    Serial.readBytes(serialBuffer, 200);
+    if (pollCount > maxPollCount)
+      maxPollCount = pollCount;
+    if (pollCount < minPollCount)
+      minPollCount = pollCount;
+      
+    Serial.print(pollCount);
+    Serial.print("\t");
+    Serial.print(minPollCount);
+    Serial.print("\t");
+    Serial.println(maxPollCount);
+    
+    pollCount = 0;
+    lastMillis = millis();
+  }
+}
+
+void loop() {
+  // Uncomment this code to see benchmark in serial (in Hz)
+  // checkPollRate();
+  
+  // Check for serial messages
+  if (Serial.available() >= 100)
+  {
+    Serial.readBytes(serialBuffer, 100);
     serialProcessor.processBulk(serialBuffer);
   }
   else 
@@ -151,6 +184,15 @@ void loop() {
   // If we haven't received any serial light updates in 5 seconds, just fallback to reactive lighting
   if (serialLightsCounter > 300) 
     useSerialLeds = false;
+
+  // Process air sensor hand position
+#if !defined(SERIAL_PLOT) && defined(USB)
+#ifdef IR_SENSOR_KEY
+    output->sendSensor(sensor->getSensorReadings());
+#else
+    output->sendSensorEvent(sensor->getHandPosition());
+#endif
+#endif
 
   // Scan touch keyboard and update lights
   touchboard->scan();
@@ -247,15 +289,6 @@ void loop() {
     Serial.print(touchboard->getRawValue(PLOT_PIN));
     Serial.println();
   }
-#endif
-
-  // Process air sensor hand position
-#if !defined(SERIAL_PLOT) && defined(USB)
-#ifdef IR_SENSOR_KEY
-    output->sendSensor(sensor->getSensorReadings());
-#else
-    output->sendSensorEvent(sensor->getHandPosition());
-#endif
 #endif
 
   // Send update

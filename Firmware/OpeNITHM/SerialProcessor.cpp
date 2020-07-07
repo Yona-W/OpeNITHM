@@ -27,12 +27,6 @@ void SerialProcessor::processConfigCommand(uint8_t* buf)
       bytes[4] = led_off.r;
       bytes[5] = led_off.g;
       bytes[6] = led_off.b;
-      
-      // slider sensitivity
-      bytes[7] = touchboard->getSensitivity();
-      
-      // air sensitivity
-      bytes[8] = sensor->getAnalogSensitivity();
 
       Serial.write(bytes, 200);
       break;
@@ -49,13 +43,10 @@ void SerialProcessor::processConfigCommand(uint8_t* buf)
       serialLeds->saveLights();
       break;
     case CMD_CALIBRATE_SLIDER:
-      touchboard->setSensitivity(buf[3]);
       touchboard->calibrateKeys(true);
       break;
     case CMD_CALIBRATE_AIR_SENSORS:
-      sensor->setAnalogSensitivity(buf[3]);
       sensor->recalibrate();
-      break;
     case CMD_FACTORY_RESET:
       // clear EEPROM and then reset the controller
       for (int i = 0 ; i < EEPROM.length() ; i++) 

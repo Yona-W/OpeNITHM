@@ -44,6 +44,9 @@ If you are going to solder your sensors directly to the PCB, it is not necessary
 [9]: https://www.ebay.com/itm/100pcs-5mm-IR-Infrared-LED-940nm-Lamp-High-Power-Wide-Angle-Long-Range/251565825589
 [10]: https://www.ebay.com/itm/100pcs-5mm-940nm-IR-LED-Infrared-Beams-Detector-Sensor-Black-Phototransistor/251816201528
 
+## Note on wiring:
+
+Until a new PCB design is made (should be fairly soon), in order to take full advantage of the firmware (or use it at all), you'll need to manually bridge pins 17 and 24 on your Teensy LC. This will be addressed in a future PCB revision, but it maximizes RGB LED throughput.
 
 ## Installing on Teensy LC
 
@@ -58,6 +61,10 @@ Locate your `arduino` folder (usually `C:\Program Files (x86)\arduino`).
 Copy `Firmware/Teensy/boards.txt` to `arduino\hardware\teensy\avr\` and overwrite the existing.
 
 Copy `Firmware/Teensy/teensy3` to `arduino\hardware\teensy\avr\cores\teensy3` and overwrite any conflicts.
+
+Copy `Firmware/FastLED/WS2812Serial.cpp` and `Firmware/FastLED/WS2812Serial.h` to `arduino\hardware\teensy\avr\libraries\WS2812Serial` and overwrite the existing.
+
+Copy `Firmware/FastLED/FastLED.cpp` and `Firmware/FastLED/FastLED.h` to `[My Documents]\Arduino\libraries\FastLED\` and overwrite the existing.
 
 #### I am applying the changes manually
 
@@ -341,42 +348,11 @@ Prior to compilation, review the (numerous) options available to the end user in
 
 #### Configuring
 
-Before use, the controller will need a few parameters set. This can easily be done using the Arduino Serial Monitor.
-
-The exact settings will vary depending on your setup, but I would try these as a starting point:
-```
-tt50
-td50
-ta0.05
-```
-
-Use the command `g` to confirm your changes registered.
-
-**NOTE:** Serial configuration will not work with serial lights. Disable this feature to allow for configuration.
-
-Per WinEpic:
-
-The touch detection system uses an exponential moving average (EMA) to detect changes in the read value. You need to tune 3 values: deadzone, threshold and alpha.
-
-- **Deadzone** is the maximum value for which a key will be considered "untouched". If the read value ever falls below the deadzone value, the key will return to being untouched. The higher this value, the "harder" you need to push the key before it is considered an input, and the faster it will return to neutral once you start lifting your finger.
-- **Threshold** is how large the different between the detected input and the EMA must be for a touch event to occur. It is used for single touches as a way to prevent accidental double inputs, and for double touches to detect them. Increasing it makes the controller less responsive and increases the risk of touches not registering. Decreasing it makes fake inputs more likely, and also makes it harder for the controller to detect multitouch.
-- **Alpha** is how much weight the last readout has in the EMA. It is usually very close to 0. If it is too high, inputs won't register as they will be considered too similar to the moving average. If it is too low, the moving average won't update properly causing touches / double touches to not be detected properly.
-
-Threshold and Deadzone values are expressed relative to the calibration baseline. For example, If a key reads 80 untouched and 100 touched, you're gonna want to set your deadzone to something around 15-20. Start with Alpha at 0.001 and slowly go up from there.
-
-You can configure it using commands sent over the serial port. All changes, aside from recalibrating, apply immediately and persist after restarting.
-
-- `tt <value>` changes the threshold.
-- `td <value>` changes the deadzone.
-- `ta <value>` changes the alpha.
-- `tc` forces the controller to recalibrate, if you moved it to a different environment or accidentally touched it during initial calibration.
-- `g` prints out the current configuration values.
-
-When tuning, you want to increase alpha until it feels like you're missing inputs, then go back down.
+To be revised.
 
 #### Power On
 
-At startup, the LEDs will flash orange 3 times. Do not hold your hands near the touchboard at this time. When the touchboard turns red, calibration begins. After the touchboard turns blue, calibration has finished.
+To be revised.
 
 #### Output
 

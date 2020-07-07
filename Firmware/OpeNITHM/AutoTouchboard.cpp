@@ -2,6 +2,8 @@
 
 void AutoTouchboard::scan()
 {
+  FastLED.isBusy();
+  
   // For each key, set multiplexers and poll both capacitive sensors simultaneously
   for (int i = 0; i < 8; i++)
   {
@@ -75,6 +77,7 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
   if (needsCalibration)
   {
     uint16_t baselines[16];
+    uint16_t maxReadings[16];
     
     // Reset calibration data for all keys
     for (int i = 0; i < 16; i++)
@@ -82,6 +85,7 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
       key_values[i] = 0;
       single_thresholds[i] = 0xFFFF;
       double_thresholds[i] = 0xFFFF;
+      maxReadings[i] = 0;
     }
 
     // Flash every key red a few times so they know to let go of the slider
@@ -118,7 +122,6 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
       scan();
     }
   
-    // figure out the baseline for each key
     for (int i = 0; i < 16; i++) 
     {
       baselines[i] = key_values[i];
@@ -145,15 +148,16 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
       }
   
 #ifndef KEY_DIVIDERS
-        leds[i] = CRGB::Blue; 
+        leds[i] = CRGB::Yellow; 
 #else
-        leds[i*2] = CRGB::Blue;
+        leds[i*2] = CRGB::Yellow;
 #endif      
       FastLED.show();
       
       for (int j = 0; j < CALIBRATION_SAMPLES; j++) 
       {
         scan();
+        maxReadings[i] = max(maxReadings[i], key_values[i]);
       }
   
 #ifndef KEY_DIVIDERS
@@ -163,7 +167,7 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
 #endif
       FastLED.show();
   
-      uint16_t window = (key_values[i] - baselines[i]) * (sensitivity / 100.0f);
+      uint16_t window = (maxReadings[i] - baselines[i]) * TOUCH_INPUT_THRESHOLD;
       single_thresholds[i] = baselines[i] + window;
       double_thresholds[i] = baselines[i] + (2 * window);
     }
@@ -200,17 +204,6 @@ uint16_t AutoTouchboard::getRawValue(int key)
   return key_values[key];
 }
 
-void AutoTouchboard::setSensitivity(uint8_t sensitivity)
-{
-  this->sensitivity = sensitivity;
-  EEPROM.put(65, sensitivity);
-}
-
-uint8_t AutoTouchboard::getSensitivity()
-{
-  return sensitivity;
-}
-
 AutoTouchboard::AutoTouchboard()
 #ifndef TEENSY
   sensor(CapacitiveSensor(SEND, RECEIVE_1, RECEIVE_2)),
@@ -219,11 +212,6 @@ AutoTouchboard::AutoTouchboard()
   pinMode(MUX_0, OUTPUT);
   pinMode(MUX_1, OUTPUT);
   pinMode(MUX_2, OUTPUT);
-
-  EEPROM.get(65, sensitivity);
-  
-  if (sensitivity == 0)
-    setSensitivity(DEFAULT_SENSITIVITY);
 
   calibrateKeys();
 }

@@ -81,20 +81,36 @@ void AirSensor::turnOffLight()
   pinMode(LED_2, INPUT);
 }
 
-int AirSensor::getValue(int sensor, bool light)
+void AirSensor::setHalfLEDs(CRGB color, int side)
 {
-  // Turn on light corresponding to read sensor
-  if (light)
+  for (int i = 0; i < 8; i++) 
   {
-    changeLight(sensor);
-  }
-  else
-  {
-    turnOffLight();
+#ifndef KEY_DIVIDERS
+    leds[i] = (side == 0) ? color : CRGB::Black; 
+#else
+    leds[i * 2] = (side == 0) ? color : CRGB::Black;
+#endif
   }
 
+  for (int i = 8; i < 16; i++) 
+  {
+#ifndef KEY_DIVIDERS
+      leds[i] = (side == 1) ? color : CRGB::Black; 
+#else
+      leds[i * 2] = (side == 1) ? color : CRGB::Black;
+#endif
+  }
+
+  FastLED.show();
+}
+
+int AirSensor::getValue(int sensor)
+{
+  // Turn on light corresponding to read sensor
+  changeLight(sensor);
+
   // Delay required because the read may occur faster than the physical light turning on
-  delayMicroseconds(125);
+  delayMicroseconds(AIR_LED_DELAY);
 
 #ifdef IR_SENSOR_MULTIPLEXED
   // Set multiplexer to corresponding sensor
@@ -130,49 +146,158 @@ AirSensor::AirSensor(int requiredSamples, int skippedSamples) : thresholds{ 1000
 #ifndef IR_SENSOR_MULTIPLEXED
       pinMode(ir_sensor_pins[i], INPUT);
 #endif
-      calibrated[i] = getValue(i, true);
+      calibrated[i] = getValue(i);
     }
   }
   else 
   { 
-    
-    EEPROM.get(66, analogSensitivity);
-
-    if (analogSensitivity == 0 || analogSensitivity >= 100)
-      setAnalogSensitivity(DEFAULT_SENSITIVITY);
-      
     analogCalibrate();
   }
+}
 
- 
+void AirSensor::loadConfig()
+{
+  for (int i = 0; i < 6; i++) 
+  {
+    EEPROM.get(74 + i, thresholds[i]);
+  }
+}
+
+void AirSensor::saveConfig()
+{
+  for (int i = 0; i < 6; i++)
+  {
+    EEPROM.put(74 + i, thresholds[i]);
+  }
+
+  EEPROM.put(66, (byte) CALIBRATION_FLAG);
 }
 
 void AirSensor::analogCalibrate() 
 {
 #ifdef IR_SENSOR_ANALOG
-  for (int sensor = 0; sensor < 6; sensor++)
+  // we'll only calibrate if:
+  //   * the user is holding the first 4 keys
+  //   * the calibration flag is not set in EEPROM
+  bool needsCalibration = false;
+  
+  byte calibrationFlag;
+  EEPROM.get(66, calibrationFlag);
+
+  // only check the first 4 keys if we've calibrated at least once
+  if (calibrationFlag == CALIBRATION_FLAG) 
+  {
+    loadConfig();
+    
+    int touched = 0;
+    touchboard->scan();
+
+    for (int i = 0; i < 4; i++) 
+    {
+      if (touchboard->update(i) != UNPRESSED) touched++;
+    }
+
+    if (touched == 4) needsCalibration = true;
+  }
+  else 
+  {
+    needsCalibration = true;
+  }
+
+  if (needsCalibration)
   {
     // first, skip samplesToSkip number of readings
     for (int i = 0; i < samplesToSkip; i++)
     {
-      getValue(sensor, true);
-      turnOffLight();
+      for (int sensor = 0; sensor < 6; sensor++)
+      {
+        getValue(sensor);
+        turnOffLight();
+      }
     }
     
-    // now gather the calibration samples for this sensor
-    for (int i = 0; i < samplesToAcquire; i++)
+    // Now gather the calibration samples for each sensor. We split the calibration
+    // into two parts -- left half of the slider and right half of the slider. We
+    // do this because the controllers' air space tends to be less sensitive on the
+    // side that contains the IR LEDs themselves, so we wanna take the 'max' of the
+    // overall calibration process for each sensor, between the two halves
+    int leftSideMins[6] = { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF };
+    int rightSideMins[6] = { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF };
+    int lastReadings[6] = { 0 };
+    bool inputDetected = false;
+  
+    for (int side = 0; side < 2; side++) 
     {
-      int value = getValue(sensor, true);
-      turnOffLight();
-
-      //keep the minimum value seen by the sensor
-      if (value < thresholds[sensor])
-        thresholds[sensor] = value;
+      // first, set the correct half of the slider red, and wait for some air input
+      setHalfLEDs(CRGB::Red, side);
+  
+      // wait for air inputs before we begin calibration
+      while (!inputDetected) 
+      {
+        for (int i = 0; i < 6; i++) 
+        {
+          int value = getValue(i);
+          
+          if (value < (AIR_INPUT_DETECTION * lastReadings[i]))
+            inputDetected = true;
+          else
+            lastReadings[i] = value;
+        }
+      }
+  
+      // set the correct half of the slider yellow
+      setHalfLEDs(CRGB::Yellow, side);
+  
+      // begin calibration
+      for (int i = 0; i < samplesToAcquire; i++)
+      {
+        for (int sensor = 0; sensor < 6; sensor++)
+        {
+          int value = getValue(sensor);
+          turnOffLight();
+  
+          // keep the minimum value seen by the sensor
+          if (side == 0) 
+          {
+            if (value < leftSideMins[sensor])
+              leftSideMins[sensor] = value;
+          }
+          else
+          {
+            if (value < rightSideMins[sensor])
+              rightSideMins[sensor] = value;
+          }
+        }
+  
+        // after sweeping the LEDs, scan the touchboard to simulate the delay between
+        // IR sweeps during actual gameplay so we calibrate accurately
+        touchboard -> scan();
+      }
+  
+      for (int i = 0; i < 6; i++) {
+        // consider the sensor calibrated, finalize calibration for this sensor.
+        calibrated[i] = true;
+  
+        // we'll take the threshold to be 40% (default) of the window between the baseline readings and the "threshold" readings
+        int bottom = max(leftSideMins[i], rightSideMins[i]);
+        thresholds[i] = bottom + ((lastReadings[i] - bottom) * AIR_INPUT_THRESHOLD);
+      }
+  
+      // set the correct half of the slider green
+      setHalfLEDs(CRGB::Green, side);
+      delay(3000);
+      inputDetected = false;
     }
-
-    // consider the sensor calibrated, finalize calibration for this sensor.
-    calibrated[sensor] = true;
-    thresholds[sensor] *= (analogSensitivity / 100.0f);
+    
+    saveConfig();
+  }
+  else 
+  {
+    for (int i = 0; i < 6; i++) 
+    {
+      // just set the keys to calibrated
+      calibrated[i] = true;
+    }
   }
 #endif
 }
@@ -194,7 +319,7 @@ bool AirSensor::isCalibrated()
 
 bool AirSensor::getSensorState(int sensor) {
   // Flash the LED and read the IR sensor
-  int value = getValue(sensor, true);
+  int value = getValue(sensor);
   turnOffLight();
 
   if (digitalMode) 
@@ -249,17 +374,6 @@ uint8_t AirSensor::getSensorReadings()
 bool AirSensor::getSensorCalibrated(int i)
 {
   return calibrated[i];
-}
-
-void AirSensor::setAnalogSensitivity(uint8_t analogSensitivity)
-{
-  this->analogSensitivity = analogSensitivity;
-  EEPROM.put(66, analogSensitivity);
-}
-
-uint8_t AirSensor::getAnalogSensitivity()
-{
-  return analogSensitivity;
 }
 
 void AirSensor::recalibrate()

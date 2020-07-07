@@ -38,6 +38,8 @@
 // Uncomment this if you wish to ignore a falsly calibrated air sensor
 //#define IGNORE_AIR_CALIBRATION
 
+// Uncomment this if you have lighted separators between the keys in your controller
+// #define KEY_DIVIDERS
 
 // *** DO NOT CHANGE BELOW THIS LINE ***
 

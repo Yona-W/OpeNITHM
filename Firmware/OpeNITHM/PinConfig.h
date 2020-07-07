@@ -83,13 +83,13 @@
 #endif
 
 // Lighting pin settings
-#define LED_TYPE    WS2812B
-#define LED_ORDER   GRB
+#define LED_TYPE    WS2812SERIAL
+#define LED_ORDER   BRG
 #ifdef TEENSY               // Teensy LC
 #if defined(TEENSY_V1_0)
 #define RGBPIN 4
 #elif defined(TEENSY_V1_1)
-#define RGBPIN 11
+#define RGBPIN 24
 #endif
 #else
 #define RGBPIN 16           // Pro Micro

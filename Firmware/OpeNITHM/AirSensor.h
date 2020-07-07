@@ -9,16 +9,34 @@
 #include "WProgram.h"
 #endif
 
+#include "AutoTouchboard.h"
+#include "Output.h"
 #include "PinConfig.h"
 #include <EEPROM.h>
 
-#define DEFAULT_SENSITIVITY 85
+#include <WS2812Serial.h>
+#define USE_WS2812SERIAL
+#include <FastLED.h>
+
+#define AIR_LED_DELAY 125
+#define AIR_INPUT_DETECTION 0.85
+#define AIR_INPUT_THRESHOLD 0.40
+#define CALIBRATION_FLAG 0xF6
+
+#ifndef KEY_DIVIDERS
+extern CRGB leds[16];
+#else
+extern CRGB leds[31];
+#endif
+
+extern AutoTouchboard *touchboard;
 
 class AirSensor
 {
   private:
     void changeLight(int light);
     void turnOffLight();
+    void setHalfLEDs(CRGB color, int side);
 
     uint8_t analogSensitivity;
     int thresholds[6];
@@ -30,16 +48,16 @@ class AirSensor
     
   public:
     AirSensor(int requiredSamples, int skippedSamples);
+    void loadConfig();
+    void saveConfig();
     void analogCalibrate();
     bool isCalibrated();
     bool isDigital();
     bool getSensorState(int sensor);
-    int getValue(int sensor, bool light);
+    int getValue(int sensor);
     float getHandPosition();
     uint8_t getSensorReadings();
     bool getSensorCalibrated(int i);
-    void setAnalogSensitivity(uint8_t analogSensitivity);
-    uint8_t getAnalogSensitivity();
     void recalibrate();
 };
 
