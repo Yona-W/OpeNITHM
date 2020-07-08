@@ -105,7 +105,7 @@ void initializeController() {
 
   // Initialize air sensor
   if (sensor != NULL) delete sensor;
-  sensor = new AirSensor(2000, 200);
+  sensor = new AirSensor(1000, 200);
 
   // Display the number of air sensors that were calibrated
   for (CRGB& led : leds)
@@ -164,7 +164,7 @@ void checkPollRate() {
 
 void loop() {
   // Uncomment this code to see benchmark in serial (in Hz)
-  // checkPollRate();
+  checkPollRate();
   
   // Check for serial messages
   if (Serial.available() >= 100)

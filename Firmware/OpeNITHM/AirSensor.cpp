@@ -287,12 +287,15 @@ void AirSensor::analogCalibrate()
       setHalfLEDs(CRGB::Green, side);
       delay(3000);
       inputDetected = false;
+      for (int j = 0; j < 6; j++) lastReadings[j] = 0;
     }
     
     saveConfig();
   }
   else 
   {
+    loadConfig();
+    
     for (int i = 0; i < 6; i++) 
     {
       // just set the keys to calibrated
