@@ -20,7 +20,7 @@
 
 #define AIR_LED_DELAY 125
 #define AIR_INPUT_DETECTION 0.85
-#define AIR_INPUT_THRESHOLD 0.40
+#define AIR_INPUT_THRESHOLD 0.50
 #define CALIBRATION_FLAG 0xF6
 
 #ifndef KEY_DIVIDERS
@@ -38,8 +38,7 @@ class AirSensor
     void turnOffLight();
     void setHalfLEDs(CRGB color, int side);
 
-    uint8_t analogSensitivity;
-    int thresholds[6];
+    uint16_t thresholds[6];
     int samplesToAcquire;
     int samplesToSkip;
 
@@ -54,7 +53,7 @@ class AirSensor
     bool isCalibrated();
     bool isDigital();
     bool getSensorState(int sensor);
-    int getValue(int sensor);
+    uint16_t getValue(int sensor);
     float getHandPosition();
     uint8_t getSensorReadings();
     bool getSensorCalibrated(int i);

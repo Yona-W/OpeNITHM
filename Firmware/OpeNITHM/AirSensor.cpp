@@ -104,7 +104,7 @@ void AirSensor::setHalfLEDs(CRGB color, int side)
   FastLED.show();
 }
 
-int AirSensor::getValue(int sensor)
+uint16_t AirSensor::getValue(int sensor)
 {
   // Turn on light corresponding to read sensor
   changeLight(sensor);
@@ -159,7 +159,8 @@ void AirSensor::loadConfig()
 {
   for (int i = 0; i < 6; i++) 
   {
-    EEPROM.get(74 + i, thresholds[i]);
+    EEPROM.get(74 + (i * 2), thresholds[i]);
+    calibrated[i] = true;
   }
 }
 
@@ -167,7 +168,7 @@ void AirSensor::saveConfig()
 {
   for (int i = 0; i < 6; i++)
   {
-    EEPROM.put(74 + i, thresholds[i]);
+    EEPROM.put(74 + (i * 2), thresholds[i]);
   }
 
   EEPROM.put(66, (byte) CALIBRATION_FLAG);
@@ -228,6 +229,8 @@ void AirSensor::analogCalibrate()
   
     for (int side = 0; side < 2; side++) 
     {
+      for (int j = 0; j < 6; j++) lastReadings[j] = 0;
+      
       // first, set the correct half of the slider red, and wait for some air input
       setHalfLEDs(CRGB::Red, side);
   
@@ -236,13 +239,18 @@ void AirSensor::analogCalibrate()
       {
         for (int i = 0; i < 6; i++) 
         {
-          int value = getValue(i);
+          uint16_t value = getValue(i);
+          turnOffLight();
           
           if (value < (AIR_INPUT_DETECTION * lastReadings[i]))
             inputDetected = true;
           else
             lastReadings[i] = value;
         }
+        
+        // after sweeping the LEDs, scan the touchboard to simulate the delay between
+        // IR sweeps during actual gameplay so we calibrate accurately
+        touchboard -> scan();
       }
   
       // set the correct half of the slider yellow
@@ -253,7 +261,7 @@ void AirSensor::analogCalibrate()
       {
         for (int sensor = 0; sensor < 6; sensor++)
         {
-          int value = getValue(sensor);
+          uint16_t value = getValue(sensor);
           turnOffLight();
   
           // keep the minimum value seen by the sensor
@@ -274,20 +282,18 @@ void AirSensor::analogCalibrate()
         touchboard -> scan();
       }
   
-      for (int i = 0; i < 6; i++) {
-        // consider the sensor calibrated, finalize calibration for this sensor.
-        calibrated[i] = true;
-  
-        // we'll take the threshold to be 40% (default) of the window between the baseline readings and the "threshold" readings
-        int bottom = max(leftSideMins[i], rightSideMins[i]);
-        thresholds[i] = bottom + ((lastReadings[i] - bottom) * AIR_INPUT_THRESHOLD);
-      }
-  
       // set the correct half of the slider green
       setHalfLEDs(CRGB::Green, side);
       delay(3000);
       inputDetected = false;
-      for (int j = 0; j < 6; j++) lastReadings[j] = 0;
+    }
+
+    for (int i = 0; i < 6; i++) 
+    {
+      // we'll take the threshold to be 50% (default) of the window between the baseline readings and the "threshold" readings
+      int bottom = max(leftSideMins[i], rightSideMins[i]);
+      thresholds[i] = bottom + ((lastReadings[i] - bottom) * AIR_INPUT_THRESHOLD);
+      calibrated[i] = true;
     }
     
     saveConfig();
@@ -295,12 +301,6 @@ void AirSensor::analogCalibrate()
   else 
   {
     loadConfig();
-    
-    for (int i = 0; i < 6; i++) 
-    {
-      // just set the keys to calibrated
-      calibrated[i] = true;
-    }
   }
 #endif
 }
@@ -322,9 +322,9 @@ bool AirSensor::isCalibrated()
 
 bool AirSensor::getSensorState(int sensor) {
   // Flash the LED and read the IR sensor
-  int value = getValue(sensor);
+  uint16_t value = getValue(sensor);
   turnOffLight();
-
+  
   if (digitalMode) 
   {
     return value == LOW ? true : false;

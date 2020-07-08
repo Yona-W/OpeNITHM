@@ -26,6 +26,12 @@
 // Uncomment this line if your LED lights are mirrored
 //#define LED_REVERSE
 
+// Uncomment this if you have lighted separators between the keys in your controller
+//#define KEY_DIVIDERS
+
+// Uncomment this if you bridged pins 17 and 24 on your Teensy and/or using DMA LED mode 
+//#define USE_DMA_RGB
+
 // *** FOR CALIBRATING AND DEBUGGING
 
 // Uncomment this line to output the touch values to the Serial port (for use with Arduino's Serial Plotter)
@@ -38,8 +44,6 @@
 // Uncomment this if you wish to ignore a falsly calibrated air sensor
 //#define IGNORE_AIR_CALIBRATION
 
-// Uncomment this if you have lighted separators between the keys in your controller
-// #define KEY_DIVIDERS
 
 // *** DO NOT CHANGE BELOW THIS LINE ***
 
