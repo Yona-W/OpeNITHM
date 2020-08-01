@@ -1,19 +1,17 @@
 #include "PinConfig.h"
 
-#ifdef USB
-#include "USBOutput.h"
-#else
-#include "SerialOutput.h"
-#endif
-
 #include "AirSensor.h"
 #include "AutoTouchboard.h"
+#include "LightsUtils.h"
 #include "SerialLeds.h"
 #include "SerialProcessor.h"
-#include "HelperClass.h"
+#include "USBOutput.h"
 
-#include <WS2812Serial.h>
-#define USE_WS2812SERIAL
+#ifdef USE_DMA_RGB
+  #include <WS2812Serial.h>
+  #define USE_WS2812SERIAL
+#endif
+
 #include <FastLED.h>
 
 SerialProcessor serialProcessor;
@@ -24,28 +22,45 @@ CRGB leds[16];
 #else
 CRGB leds[31];
 #endif
+
+// Buffer for receiving serial input, either lights or config updates
 byte serialBuffer[200];
+// Flag that says whether the RGB strip needs to be refreshed
 bool updateLeds = false;
+// Flag that says whether to let serial input control the RGB strip, or make them reactively lit
 bool useSerialLeds = false;
+// A counter for how many loops we've run without having received any serial light updates. If
+// this counter reaches a pre-defined threshold, we fall back to reactive lighting
 int serialLightsCounter;
+// Used for benchmarking the input polling rate
 long lastMillis = 0;
+// Count how many times we updated input in the last second
 int pollCount = 0;
+// Keep track of the maximum polling rate we achieved
 int maxPollCount = 0;
+// Keep track of the minimum polling rate we achieved
 int minPollCount = 1000;
 
+// The colors to light the slider keys when they're on and off in reactive lighting mode
 CRGB led_on;
 CRGB led_off;
-
+// The intensity of the lights in reactive lighting mode
 float lightIntensity[16];
+
+// Whether the controller is currently active. 
 bool activated = true;
 
 AutoTouchboard *touchboard;
 AirSensor *sensor;
-Output *output;
+USBOutput *output;
 SerialLeds *serialLeds;
 
 void initializeController();
 
+/**
+ * Teensy setup. Initialize FastLED and start the timer for
+ * determining if we're using serial light output.
+ */
 void setup() {
   Serial.begin(115200);
   #ifndef KEY_DIVIDERS
@@ -63,6 +78,11 @@ void setup() {
   lastMillis = millis();
 }
 
+/**
+ * Do the actual setup of our classes for input and output. This is broken
+ * out into a separate function so that if we update any config values over
+ * serial, everything can be re-initialized without needing a Teensy reboot.
+ */
 void initializeController() {
   // Flash LEDs orange 3 times
   for (int i = 0; i < 3; i++)
@@ -131,16 +151,14 @@ void initializeController() {
   delay(3000);
   serialLightsCounter = 0;
 
-  // Initialize relevant output method / USB or serial
+  // Initialize the USB output
   if (output != NULL) delete output;
-  
-#ifdef USB
   output = new USBOutput();
-#else
-  output = new SerialOutput();
-#endif
 }
 
+/**
+ * Helps check the polling rate of the controller and benchmark its input.
+ */
 void checkPollRate() {
   pollCount++;
   
@@ -162,6 +180,10 @@ void checkPollRate() {
   }
 }
 
+/**
+ * Main loop, checks all sensor states and updates the outputs as well as receive
+ * serial packets for light and config updates.
+ */
 void loop() {
   // Uncomment this code to see benchmark in serial (in Hz)
   // checkPollRate();
@@ -206,7 +228,22 @@ void loop() {
     index = 15 - i;
 #endif
 
+#if NUM_SENSORS == 16
     KeyState keyState = touchboard->update(i);
+#elif NUM_SENSORS == 32
+    KeyState keyState;
+    KeyState stateTop = touchboard->update(i * 2);
+    KeyState stateBot = touchboard->update(i * 2 + 1);
+
+    // Initial 32 key test -- only the single threshold will be applied
+    if (stateTop == KeyState::UNPRESSED && stateBot == KeyState::UNPRESSED)
+      keyState == KeyState::UNPRESSED;
+    else if ((stateTop != KeyState::UNPRESSED && stateBot == KeyState::UNPRESSED) ||
+             (stateTop == KeyState::UNPRESSED && stateBot != KeyState::UNPRESSED))
+      keyState == KeyState::SINGLE_PRESS;
+    else if (stateTop != KeyState::UNPRESSED && stateBot != KeyState::UNPRESSED)
+      keyState == KeyState::DOUBLE_PRESS;
+#endif
 
     // handle changing key colors for non-serial LED updates
     if (!useSerialLeds)
@@ -253,7 +290,7 @@ void loop() {
         leds[index*2].setRGB(temp.r, temp.g, temp.b);
         if (i < 15){
           temp = serialLeds->getDivider(i);
-          index = HelperClass::getDividerIndex(i);
+          index = LightsUtils::getDividerIndex(i);
           leds[index].setRGB(temp.r, temp.g, temp.b);
         }
 #endif
@@ -271,7 +308,7 @@ void loop() {
 #ifdef SERIAL_PLOT
   if (PLOT_PIN == -1)
   {
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < NUM_SENSORS; i++)
     {
 #ifdef SERIAL_RAW_VALUES
       // Print values

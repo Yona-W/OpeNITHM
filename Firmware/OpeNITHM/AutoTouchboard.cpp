@@ -1,9 +1,11 @@
 #include "AutoTouchboard.h"
 
+#if NUM_SENSORS == 32
+static const int sensorMap[] = { 3, 11, 2, 10, 1, 9, 0, 8, 31, 23, 30, 22, 29, 21, 28, 20, 27, 19, 26, 18, 25, 17, 24, 16, 7, 15, 6, 14, 5, 13, 4, 12 };
+#endif
+
 void AutoTouchboard::scan()
 {
-  FastLED.isBusy();
-  
   // For each key, set multiplexers and poll both capacitive sensors simultaneously
   for (int i = 0; i < 8; i++)
   {
@@ -11,34 +13,37 @@ void AutoTouchboard::scan()
     digitalWrite(MUX_1, bitRead(i, 1));
     digitalWrite(MUX_2, bitRead(i, 2));
 
-#ifndef TEENSY
-    unsigned int* values = sensor.sense(3);
-
-    // Store the values received from the sensor poll into their respective positions
-    key_values[i] = values[0];
-    key_values[i + 8] = values[1];
-#else
-    key_values[i] = touchRead(TOUCH_0);
-    key_values[i+8] = touchRead(TOUCH_1);
+#if NUM_SENSORS == 16
+    key_values[i] = (unsigned int) touchRead(TOUCH_0);
+    key_values[i + 8] = (unsigned int) touchRead(TOUCH_1);
+#elif NUM_SENSORS == 32
+    key_values[sensorMap[i]] = (unsigned int) touchRead(TOUCH_0);
+    key_values[sensorMap[i + 8]] = (unsigned int) touchRead(TOUCH_1);
+    key_values[sensorMap[i + 16]] = (unsigned int) touchRead(TOUCH_2);
+    key_values[sensorMap[i + 24]] = (unsigned int) touchRead(TOUCH_3);
 #endif
   }
 }
 
 void AutoTouchboard::loadConfig()
 {
-  for (int i = 0; i < 16; i++) 
+  for (int i = 0; i < NUM_SENSORS; i++) 
   {
     EEPROM.get(i * 2, single_thresholds[i]);
+#if NUM_SENSORS == 16
     EEPROM.get((i * 2) + 32, double_thresholds[i]);
+#endif
   }
 }
 
 void AutoTouchboard::saveConfig()
 {
-  for (int i = 0; i < 16; i++)
+  for (int i = 0; i < NUM_SENSORS; i++)
   {
     EEPROM.put(i * 2, single_thresholds[i]);
+#if NUM_SENSORS == 16
     EEPROM.put((i * 2) + 32, double_thresholds[i]);
+#endif
   }
 
   EEPROM.put(64, (byte) CALIBRATION_FLAG);
@@ -62,12 +67,20 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
     int touched = 0;
     scan();
 
+#if NUM_SENSORS == 16
     for (int i = 12; i < 16; i++) 
     {
       if (update(i) != UNPRESSED) touched++;
     }
+#elif NUM_SENSORS == 32
+    for (int i = 24; i < 31; i += 2)
+    {
+      if (update(i) != UNPRESSED || update(i + 1) != UNPRESSED) touched++;
+    }
+#endif
 
-    if (touched == 4) needsCalibration = true;
+    // force re-calibration if the last 4 keys are being held
+    needsCalibration = (touched == 4);
   }
   else 
   {
@@ -76,11 +89,11 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
 
   if (needsCalibration)
   {
-    uint16_t baselines[16];
-    uint16_t maxReadings[16];
+    uint16_t baselines[NUM_SENSORS];
+    uint16_t maxReadings[NUM_SENSORS];
     
     // Reset calibration data for all keys
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < NUM_SENSORS; i++)
     {
       key_values[i] = 0;
       single_thresholds[i] = 0xFFFF;
@@ -122,7 +135,7 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
       scan();
     }
   
-    for (int i = 0; i < 16; i++) 
+    for (int i = 0; i < NUM_SENSORS; i++) 
     {
       baselines[i] = key_values[i];
     }
@@ -132,13 +145,30 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
     // the same amount, we have the single double press each key, obtain the
     // average readout, then use the baselines to calculate a window for singles
     // and doubles
-    for (int i = 0; i < 16; i++) 
+    for (int i = 0; i < NUM_SENSORS; i++) 
     {
-#ifndef KEY_DIVIDERS
-        leds[i] = CRGB::Red; 
-#else
-        leds[i*2] = CRGB::Red;
+      CRGB color;
+      int lightIndex;
+
+      // In 16-key mode, the key stays red until we detect a touch, then turns purple while the readings
+      // are being taken, then turns green. In 32-key mode, the key stays red until it detects the top
+      // sensor touched, then the key turns purple during readings for the top sensor, then turns yellow.
+      // Once it's yellow, it performs the same process for the bottom sensor, then turns green and moves
+      // to the next key.
+#if NUM_SENSORS == 16
+      color = CRGB::Red;
+      lightIndex = i;
+#elif NUM_SENSORS == 32
+      color = (i % 2 == 0) ? CRGB::Red : CRGB::Yellow;
+      lightIndex = i / 2;
 #endif
+
+#ifndef KEY_DIVIDERS
+        leds[lightIndex] = color; 
+#else
+        leds[lightIndex * 2] = color;
+#endif
+
       FastLED.show();
   
       // wait until we detect a touch, then start measuring to determine the average
@@ -148,10 +178,11 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
       }
   
 #ifndef KEY_DIVIDERS
-        leds[i] = CRGB::Yellow; 
+        leds[lightIndex] = CRGB::Purple; 
 #else
-        leds[i*2] = CRGB::Yellow;
+        leds[lightIndex * 2] = CRGB::Purple;
 #endif      
+
       FastLED.show();
       
       for (int j = 0; j < CALIBRATION_SAMPLES; j++) 
@@ -159,12 +190,19 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
         scan();
         maxReadings[i] = max(maxReadings[i], key_values[i]);
       }
-  
-#ifndef KEY_DIVIDERS
-        leds[i] = CRGB::Green; 
-#else
-        leds[i*2] = CRGB::Green;
+      
+#if NUM_SENSORS == 16
+      color = CRGB::Green;
+#elif NUM_SENSORS == 32
+      color = (i % 2 == 0) ? CRGB::Yellow : CRGB::Green;
 #endif
+
+#ifndef KEY_DIVIDERS
+        leds[lightIndex] = color; 
+#else
+        leds[lightIndex * 2] = color;
+#endif
+
       FastLED.show();
   
       uint16_t window = (maxReadings[i] - baselines[i]) * TOUCH_INPUT_THRESHOLD;
@@ -182,7 +220,7 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
 #ifndef KEY_DIVIDERS
         leds[i] = CRGB::Green; 
 #else
-        leds[i*2] = CRGB::Green;
+        leds[i * 2] = CRGB::Green;
 #endif
       FastLED.show();
     }
@@ -205,9 +243,6 @@ uint16_t AutoTouchboard::getRawValue(int key)
 }
 
 AutoTouchboard::AutoTouchboard()
-#ifndef TEENSY
-  sensor(CapacitiveSensor(SEND, RECEIVE_1, RECEIVE_2)),
-#endif
 {
   pinMode(MUX_0, OUTPUT);
   pinMode(MUX_1, OUTPUT);

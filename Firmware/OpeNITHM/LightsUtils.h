@@ -3,7 +3,11 @@
 
 #include "Config.h"
 
-class HelperClass
+/**
+ * Simple helper class to make it easier to deal with the slider RGB strip,
+ * since we support both lighted and non-lighted separators (aka 16 vs 31 LEDs)
+ */
+class LightsUtils
 {
   public:
 

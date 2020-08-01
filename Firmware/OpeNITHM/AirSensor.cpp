@@ -198,7 +198,20 @@ void AirSensor::analogCalibrate()
       if (touchboard->update(i) != UNPRESSED) touched++;
     }
 
-    if (touched == 4) needsCalibration = true;
+#if NUM_SENSORS == 16
+    for (int i = 0; i < 4; i++) 
+    {
+      if (touchboard->update(i) != UNPRESSED) touched++;
+    }
+#elif NUM_SENSORS == 32
+    for (int i = 0; i < 7; i += 2)
+    {
+      if (touchboard->update(i) != UNPRESSED || touchboard->update(i + 1) != UNPRESSED) touched++;
+    }
+#endif
+
+    // force re-calibration if the first 4 keys are being held
+    needsCalibration = (touched == 4);
   }
   else 
   {

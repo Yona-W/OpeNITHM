@@ -4,7 +4,6 @@
 #define _USBOUTPUT_h
 
 #include "Config.h"
-#include "Output.h"
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "arduino.h"
@@ -12,11 +11,14 @@
 #include "WProgram.h"
 #endif
 
-#ifndef TEENSY
-#include <HID-Project.h>
-#endif
+enum KeyState 
+{
+  UNPRESSED,
+  SINGLE_PRESS,
+  DOUBLE_PRESS
+};
 
-class USBOutput : public Output
+class USBOutput
 {
   private:
     float lastPosition;
@@ -25,11 +27,11 @@ class USBOutput : public Output
     void pressKey(uint16_t key);
     void releaseKey(uint16_t key);
   public:
-    void sendKeyEvent(int key, bool pressed, bool doublePressed) override;
-    void sendKeyEvent(int key, KeyState keyState) override;
-    void sendSensorEvent(float position) override;
-    void sendSensor(int sensor) override;
-    void sendUpdate() override;
+    void sendKeyEvent(int key, bool pressed, bool doublePressed);
+    void sendKeyEvent(int key, KeyState keyState);
+    void sendSensorEvent(float position);
+    void sendSensor(int sensor);
+    void sendUpdate();
     USBOutput();
 };
 

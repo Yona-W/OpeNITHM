@@ -4,15 +4,16 @@
 #define _TOUCHBOARD_h
 
 #include "Config.h"
-#include "Output.h"
 #include "PinConfig.h"
-#ifndef TEENSY
-#include "CapacitiveSensor.h"
-#endif
+#include "USBOutput.h"
+
 #include <EEPROM.h>
 
-#include <WS2812Serial.h>
-#define USE_WS2812SERIAL
+#ifdef USE_DMA_RGB
+  #include <WS2812Serial.h>
+  #define USE_WS2812SERIAL
+#endif
+
 #include <FastLED.h>
 
 #define CALIBRATION_SAMPLES 200
@@ -29,12 +30,9 @@ extern CRGB leds[31];
 class AutoTouchboard
 {
   private:
-#ifndef TEENSY
-    CapacitiveSensor sensor;
-#endif
-    uint16_t key_values[16];
-    uint16_t single_thresholds[16];
-    uint16_t double_thresholds[16];
+    uint16_t key_values[NUM_SENSORS];
+    uint16_t single_thresholds[NUM_SENSORS];
+    uint16_t double_thresholds[NUM_SENSORS];
 
   public:
     AutoTouchboard();
