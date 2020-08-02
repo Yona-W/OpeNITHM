@@ -1,7 +1,12 @@
 #include "AutoTouchboard.h"
 
 #if NUM_SENSORS == 32
-static const int sensorMap[] = { 3, 11, 2, 10, 1, 9, 0, 8, 31, 23, 30, 22, 29, 21, 28, 20, 27, 19, 26, 18, 25, 17, 24, 16, 7, 15, 6, 14, 5, 13, 4, 12 };
+static const int sensorMap[] = {
+  11, 3, 10, 2, 9, 1, 8, 0,
+  31, 23, 30, 22, 29, 21, 28, 20,
+  27, 19, 26, 18, 25, 17, 24, 16,
+  15, 7, 14, 6, 13, 5, 12, 4
+};                             
 #endif
 
 void AutoTouchboard::scan()
@@ -17,7 +22,7 @@ void AutoTouchboard::scan()
     key_values[i] = (unsigned int) touchRead(TOUCH_0);
     key_values[i + 8] = (unsigned int) touchRead(TOUCH_1);
 #elif NUM_SENSORS == 32
-    key_values[sensorMap[i]] = (unsigned int) touchRead(TOUCH_0);
+    key_values[sensorMap[i]] = (unsigned int) touchRead(TOUCH_0); 
     key_values[sensorMap[i + 8]] = (unsigned int) touchRead(TOUCH_1);
     key_values[sensorMap[i + 16]] = (unsigned int) touchRead(TOUCH_2);
     key_values[sensorMap[i + 24]] = (unsigned int) touchRead(TOUCH_3);

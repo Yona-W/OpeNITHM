@@ -50,7 +50,7 @@
 #define PLOT_PIN -1
 
 // Uncomment this if you wish to ignore a falsely calibrated air sensor
-//#define IGNORE_AIR_CALIBRATION
+// #define IGNORE_AIR_CALIBRATION
 
 
 

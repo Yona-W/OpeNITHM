@@ -20,7 +20,7 @@ KeyState key_states[16];
 #ifndef KEY_DIVIDERS
 CRGB leds[16];
 #else
-CRGB leds[31];
+CRGB leds[31]; 
 #endif
 
 // Buffer for receiving serial input, either lights or config updates
@@ -64,6 +64,7 @@ void initializeController();
 void setup() {
   Serial.begin(115200);
   #ifndef KEY_DIVIDERS
+  
   FastLED.addLeds<LED_TYPE, RGBPIN, LED_ORDER>(leds, 16);
   #else
   //Uncomment and tune this value if you're having power issues
@@ -231,18 +232,9 @@ void loop() {
 #if NUM_SENSORS == 16
     KeyState keyState = touchboard->update(i);
 #elif NUM_SENSORS == 32
-    KeyState keyState;
     KeyState stateTop = touchboard->update(i * 2);
     KeyState stateBot = touchboard->update(i * 2 + 1);
-
-    // Initial 32 key test -- only the single threshold will be applied
-    if (stateTop == KeyState::UNPRESSED && stateBot == KeyState::UNPRESSED)
-      keyState == KeyState::UNPRESSED;
-    else if ((stateTop != KeyState::UNPRESSED && stateBot == KeyState::UNPRESSED) ||
-             (stateTop == KeyState::UNPRESSED && stateBot != KeyState::UNPRESSED))
-      keyState == KeyState::SINGLE_PRESS;
-    else if (stateTop != KeyState::UNPRESSED && stateBot != KeyState::UNPRESSED)
-      keyState == KeyState::DOUBLE_PRESS;
+    KeyState keyState = (KeyState) stateTop + stateBot;
 #endif
 
     // handle changing key colors for non-serial LED updates
