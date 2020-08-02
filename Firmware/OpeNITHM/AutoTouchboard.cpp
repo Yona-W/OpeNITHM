@@ -155,7 +155,7 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
       CRGB color;
       int lightIndex;
 
-      // In 16-key mode, the key stays red until we detect a touch, then turns purple while the readings
+      // In 16-key mode, the key stays red until we detect a touch, then turns silver while the readings
       // are being taken, then turns green. In 32-key mode, the key stays red until it detects the top
       // sensor touched, then the key turns purple during readings for the top sensor, then turns yellow.
       // Once it's yellow, it performs the same process for the bottom sensor, then turns green and moves
@@ -183,9 +183,9 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
       }
   
 #ifndef KEY_DIVIDERS
-        leds[lightIndex] = CRGB::Purple; 
+        leds[lightIndex] = CRGB::Silver; 
 #else
-        leds[lightIndex * 2] = CRGB::Purple;
+        leds[lightIndex * 2] = CRGB::Silver;
 #endif      
 
       FastLED.show();
@@ -234,10 +234,15 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
 
 KeyState AutoTouchboard::update(int key)
 {
+#if NUM_SENSORS == 16
   if (key_values[key] > double_thresholds[key])
     return DOUBLE_PRESS;
   else if (key_values[key] > single_thresholds[key])
     return SINGLE_PRESS;
+#elif NUM_SENSORS == 32
+  if (key_values[key] > single_thresholds[key])
+    return SINGLE_PRESS;
+#endif
   else
     return UNPRESSED;
 }
