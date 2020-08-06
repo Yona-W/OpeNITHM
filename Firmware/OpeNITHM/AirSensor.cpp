@@ -192,12 +192,7 @@ void AirSensor::analogCalibrate()
     
     int touched = 0;
     touchboard->scan();
-
-    for (int i = 0; i < 4; i++) 
-    {
-      if (touchboard->update(i) != UNPRESSED) touched++;
-    }
-
+    
 #if NUM_SENSORS == 16
     for (int i = 0; i < 4; i++) 
     {

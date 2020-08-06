@@ -187,7 +187,7 @@ void checkPollRate() {
  */
 void loop() {
   // Uncomment this code to see benchmark in serial (in Hz)
-  // checkPollRate();
+  checkPollRate();
   
   // Check for serial messages
   if (Serial.available() >= 100)
