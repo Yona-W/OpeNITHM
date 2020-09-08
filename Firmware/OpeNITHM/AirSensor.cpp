@@ -332,7 +332,14 @@ bool AirSensor::getSensorState(int sensor) {
   // Flash the LED and read the IR sensor
   uint16_t value = getValue(sensor);
   turnOffLight();
-  
+  /*
+  Serial.print("Sensor ");
+  Serial.print(sensor);
+  Serial.print(" value ");
+  Serial.print(value);
+  Serial.print(" threshold ");
+  Serial.println(thresholds[sensor]);
+  */
   if (digitalMode) 
   {
     return value == LOW ? true : false;
