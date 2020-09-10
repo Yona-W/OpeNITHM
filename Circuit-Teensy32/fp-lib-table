@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name 74HC4051)(type KiCad)(uri ${KIPRJMOD}/74HC4051.pretty)(options "")(descr ""))
+  (lib (name OpeNITHM)(type KiCad)(uri ${KIPRJMOD}/OpeNITHM.pretty)(options "")(descr ""))
+)
