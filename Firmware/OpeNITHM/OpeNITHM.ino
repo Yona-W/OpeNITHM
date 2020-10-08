@@ -90,13 +90,13 @@ void initializeController() {
       led = CRGB::Orange;
       
     FastLED.show();
-    delay(1000);
+    delay(500);
     
     for (CRGB& led : leds)
       led = CRGB::Black;
       
     FastLED.show();
-    delay(1000);
+    delay(500);
   }
 
   // Initialize and calibrate touch sensors
@@ -124,7 +124,7 @@ void initializeController() {
 
   // Initialize air sensor
   if (sensor != NULL) delete sensor;
-  sensor = new AirSensor(1000, 200);
+  sensor = new AirSensor(400, 200);
 
   // Display the number of air sensors that were calibrated
   for (CRGB& led : leds)
@@ -237,7 +237,7 @@ void loop() {
         lightIntensity[index] -= 0.05f;
   
       // If the key is currently being held, set its color to the on color
-      if (stateTop || stateTop)
+      if (stateTop || stateBot)
       {
         lightIntensity[index] = 1.0f;
         

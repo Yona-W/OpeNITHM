@@ -5,6 +5,7 @@
 
 #include "Config.h"
 #include "PinConfig.h"
+#include "RunningSum.h"
 #include "USBOutput.h"
 
 #include <EEPROM.h>
@@ -12,10 +13,8 @@
 #define USE_WS2812SERIAL
 #include <FastLED.h>
 
-#define CALIBRATION_SAMPLES 80
-#define CALIBRATION_DETECTION_THRESHOLD 6
-#define CALIBRATION_FLAG 0xA2
-#define TOUCH_INPUT_THRESHOLD 0.85
+// for hit detection, we keep a running record of the last X number
+// of arrow readings and the deltas from their last readings
 
 #ifndef KEY_DIVIDERS
 extern CRGB leds[16];
@@ -23,20 +22,28 @@ extern CRGB leds[16];
 extern CRGB leds[31];
 #endif
 
+// the size of the buffer of deltas to keep for each key
+#define NUM_READINGS 10
+
 class AutoTouchboard
 {
   private:
+    // these will be tunable / need to be experimented ith
+    int deltaThreshold = 5;
+    int releaseHysteresis = 2;
+    
     uint16_t key_values[NUM_SENSORS];
-    uint16_t thresholds[NUM_SENSORS];
+    bool states[NUM_SENSORS];
+    int releaseThresholds[NUM_SENSORS];
+    int lastReadings[NUM_SENSORS];
+    RunningSum* deltas[NUM_SENSORS];
 
   public:
     AutoTouchboard();
     void scan();
-    void loadConfig();
-    void saveConfig();
     bool update(int key);
     uint16_t getRawValue(int key);
-    void calibrateKeys(bool forceCalibrate = false);
+    void calibrateKeys();
 };
 
 #endif

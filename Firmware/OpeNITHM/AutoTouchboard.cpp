@@ -23,184 +23,89 @@ void AutoTouchboard::scan()
   }
 }
 
-void AutoTouchboard::loadConfig()
+void AutoTouchboard::calibrateKeys()
 {
-  for (int i = 0; i < NUM_SENSORS; i++) 
+  // Flash every key red a few times so they know to let go of the slider while we self-calibrate
+  for (int i = 0; i < 5; i++) 
   {
-    EEPROM.get(i * 2, thresholds[i]);
+    for (int j = 0; j < 16; j++)
+    {
+#ifndef KEY_DIVIDERS
+      leds[j] = CRGB::Red; 
+#else
+      leds[j*2] = CRGB::Red;
+#endif
+    }
+
+    FastLED.show();
+    delay(500);
+
+    for (int j = 0; j < 16; j++)
+    {
+#ifndef KEY_DIVIDERS
+      leds[j] = CRGB::Purple; 
+#else
+      leds[j*2] = CRGB::Purple;
+#endif
+    }
+
+    FastLED.show();
+    delay(500);
   }
-}
 
-void AutoTouchboard::saveConfig()
-{
-  for (int i = 0; i < NUM_SENSORS; i++)
-  {
-    EEPROM.put(i * 2, thresholds[i]);
-  }
-
-  EEPROM.put(64, (byte) CALIBRATION_FLAG);
-}
-
-void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
-{
-  // we'll only calibrate if:
-  //   * the user is holding the last 4 keys
-  //   * the calibration flag is not set in EEPROM
-  bool needsCalibration = forceCalibrate;
+  // Take the initial baseline readings so we can populate our delta buffer
+  int value;
   
-  byte calibrationFlag;
-  EEPROM.get(64, calibrationFlag);
-
-  // only check the last 4 keys if we've calibrated at least once
-  if (calibrationFlag == CALIBRATION_FLAG) 
-  {
-    loadConfig();
-    
-    int touched = 0;
+  for (int r = 0; r < NUM_READINGS; r++) {
     scan();
 
-    for (int i = 24; i < 31; i += 2)
-    {
-      if (update(i) || update(i + 1)) touched++;
-    }
+    for (int i = 0; i < NUM_SENSORS; i++) {
+      value = key_values[i];
 
-    // force re-calibration if the last 4 keys are being held
-    needsCalibration = (touched == 4);
+      // calculate the newest delta if it's not the first reading
+      if (r > 0) {
+        deltas[i]->addValue(value - lastReadings[i]);
+      }
+
+      lastReadings[i] = value;
+    }
   }
-  else 
+
+  // Flash the slider green for a couple of seconds to show success
+  for (int j = 0; j < 16; j++)
   {
-    needsCalibration = true;
-  }
-
-  if (needsCalibration)
-  {
-    uint16_t baselines[NUM_SENSORS];
-    uint16_t maxReadings[NUM_SENSORS];
-    
-    // Reset calibration data for all keys
-    for (int i = 0; i < NUM_SENSORS; i++)
-    {
-      key_values[i] = 0;
-      thresholds[i] = 0xFFFF;
-      maxReadings[i] = 0;
-    }
-
-    // Flash every key red a few times so they know to let go of the slider
-    for (int i = 0; i < 5; i++) 
-    {
-      for (int j = 0; j < 16; j++)
-      {
 #ifndef KEY_DIVIDERS
-        leds[j] = CRGB::Red; 
+    leds[j] = CRGB::Green;
 #else
-        leds[j*2] = CRGB::Red;
+    leds[j * 2] = CRGB::Green;
 #endif
-      }
-
-      FastLED.show();
-      delay(500);
-
-      for (int j = 0; j < 16; j++)
-      {
-#ifndef KEY_DIVIDERS
-        leds[j] = CRGB::Purple; 
-#else
-        leds[j*2] = CRGB::Purple;
-#endif
-      }
-
-      FastLED.show();
-      delay(500);
-    }
-  
-    // Figure out the baselines for each key
-    for (int i = 0; i < CALIBRATION_SAMPLES; i++) 
-    {
-      scan();
-    }
-  
-    for (int i = 0; i < NUM_SENSORS; i++) 
-    {
-      baselines[i] = key_values[i];
-    }
-  
-    // Iterate over each key and have the user single press to calculate
-    // our threshold windows. Since each finger raises the value by roughly
-    // the same amount, we have the single double press each key, obtain the
-    // average readout, then use the baselines to calculate a window for singles
-    // and doubles
-    for (int i = 0; i < NUM_SENSORS; i++) 
-    {
-      // In 16-key mode, the key stays red until we detect a touch, then turns silver while the readings
-      // are being taken, then turns green. In 32-key mode, the key stays red until it detects the top
-      // sensor touched, then the key turns purple during readings for the top sensor, then turns yellow.
-      // Once it's yellow, it performs the same process for the bottom sensor, then turns green and moves
-      // to the next key.
-      CRGB color = (i % 2 == 0) ? CRGB::Red : CRGB::Yellow;
-      int lightIndex = i / 2;
-
-#ifndef KEY_DIVIDERS
-        leds[lightIndex] = color; 
-#else
-        leds[lightIndex * 2] = color;
-#endif
-
-      FastLED.show();
-  
-      // wait until we detect a touch, then start measuring to determine the average
-      while (key_values[i] < baselines[i] + CALIBRATION_DETECTION_THRESHOLD) 
-      {
-        scan();
-      }
-  
-#ifndef KEY_DIVIDERS
-        leds[lightIndex] = CRGB::Silver; 
-#else
-        leds[lightIndex * 2] = CRGB::Silver;
-#endif      
-
-      FastLED.show();
-      
-      for (int j = 0; j < CALIBRATION_SAMPLES; j++) 
-      {
-        scan();
-        maxReadings[i] = max(maxReadings[i], key_values[i]);
-      }
-      
-      color = (i % 2 == 0) ? CRGB::Yellow : CRGB::Green;
-
-#ifndef KEY_DIVIDERS
-        leds[lightIndex] = color; 
-#else
-        leds[lightIndex * 2] = color;
-#endif
-
-      FastLED.show();
-  
-      uint16_t window = (maxReadings[i] - baselines[i]) * TOUCH_INPUT_THRESHOLD;
-      thresholds[i] = baselines[i] + window;
-    }
-
-    saveConfig();
-  }
-  else 
-  {
-    // just set the keys green
-    for (int i = 0; i < 16; i++) 
-    {
-#ifndef KEY_DIVIDERS
-        leds[i] = CRGB::Green; 
-#else
-        leds[i * 2] = CRGB::Green;
-#endif
-      FastLED.show();
-    }
   }
 }
 
 bool AutoTouchboard::update(int key)
 {
-  return (key_values[key] > thresholds[key]);
+  // check if the button is pressed
+  // keep a running record of the last X deltas and the latest readings
+  int value = key_values[key];
+  deltas[key]->addValue(value - lastReadings[key]);
+  lastReadings[key] = value;
+
+  // check the readout data and the running sum of the deltas;
+  // if running sum of deltas goes above our defined threshold,
+  // trigger a press and set new lower bounds for release,
+  // otherwise, check for a release
+  if (!states[key] && (deltas[key]->getSum() > deltaThreshold)) {
+    // set a new release threshold based on the reading at the time we detected
+    // the press (minus the threshold + a small hysteresis factor)
+    releaseThresholds[key] = value - deltaThreshold + releaseHysteresis;
+    states[key] = true;
+  } else if (states[key] && (value < releaseThresholds[key])) {
+    // new release
+    states[key] = false;
+    releaseThresholds[key] = 0;
+  }
+  
+  return states[key];
 }
 
 uint16_t AutoTouchboard::getRawValue(int key)
@@ -213,6 +118,11 @@ AutoTouchboard::AutoTouchboard()
   pinMode(MUX_0, OUTPUT);
   pinMode(MUX_1, OUTPUT);
   pinMode(MUX_2, OUTPUT);
+
+  for (int i = 0; i < NUM_SENSORS; i++) {
+    deltas[i] = new RunningSum(NUM_READINGS);
+    states[i] = false;
+  }
 
   calibrateKeys();
 }

@@ -39,7 +39,7 @@ void SerialProcessor::processConfigCommand(uint8_t* buf)
       serialLeds->saveLights();
       break;
     case CMD_CALIBRATE_SLIDER:
-      touchboard->calibrateKeys(true);
+      touchboard->calibrateKeys();
       break;
     case CMD_CALIBRATE_AIR_SENSORS:
       sensor->recalibrate();
