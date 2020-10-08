@@ -7,16 +7,14 @@
 #include "SerialProcessor.h"
 #include "USBOutput.h"
 
-#ifdef USE_DMA_RGB
-  #include <WS2812Serial.h>
-  #define USE_WS2812SERIAL
-#endif
-
+#include <WS2812Serial.h>
+#define USE_WS2812SERIAL
 #include <FastLED.h>
 
 SerialProcessor serialProcessor;
 
-KeyState key_states[16];
+bool key_states[NUM_SENSORS];
+
 #ifndef KEY_DIVIDERS
 CRGB leds[16];
 #else
@@ -63,11 +61,11 @@ void initializeController();
  */
 void setup() {
   Serial.begin(115200);
-  #ifndef KEY_DIVIDERS
   
+  #ifndef KEY_DIVIDERS
   FastLED.addLeds<LED_TYPE, RGBPIN, LED_ORDER>(leds, 16);
   #else
-  //Uncomment and tune this value if you're having power issues
+  // Tune this value if you're having LED issues
   FastLED.setBrightness(170);
   FastLED.addLeds<LED_TYPE, RGBPIN, LED_ORDER>(leds, 31);
   #endif
@@ -229,13 +227,8 @@ void loop() {
     index = 15 - i;
 #endif
 
-#if NUM_SENSORS == 16
-    KeyState keyState = touchboard->update(i);
-#elif NUM_SENSORS == 32
-    KeyState stateTop = touchboard->update(i * 2);
-    KeyState stateBot = touchboard->update(i * 2 + 1);
-    KeyState keyState = (KeyState) stateTop + stateBot;
-#endif
+    bool stateTop = touchboard->update(i * 2);
+    bool stateBot = touchboard->update(i * 2 + 1);
 
     // handle changing key colors for non-serial LED updates
     if (!useSerialLeds)
@@ -244,9 +237,10 @@ void loop() {
         lightIntensity[index] -= 0.05f;
   
       // If the key is currently being held, set its color to the on color
-      if (keyState == SINGLE_PRESS || keyState == DOUBLE_PRESS)
+      if (stateTop || stateTop)
       {
         lightIntensity[index] = 1.0f;
+        
 #ifndef KEY_DIVIDERS
         leds[index].setRGB(min(led_on.r / 2 + led_on.r / 2 * lightIntensity[index], 255), min(led_on.g / 2 + led_on.g / 2 * lightIntensity[index], 255), min(led_on.b / 2 + led_on.b / 2 * lightIntensity[index], 255));
 #else
@@ -265,7 +259,7 @@ void loop() {
 
 #ifdef KEY_DIVIDERS     
       lightIntensity[index] = 1.0f;
-      leds[index*2-1].setRGB(min(led_on.r / 2 + led_on.r / 2 * lightIntensity[index], 255), min(led_on.g / 2 + led_on.g / 2 * lightIntensity[index], 255), min(led_on.b / 2 + led_on.b / 2 * lightIntensity[index], 255));
+      leds[index * 2 - 1].setRGB(min(led_on.r / 2 + led_on.r / 2 * lightIntensity[index], 255), min(led_on.g / 2 + led_on.g / 2 * lightIntensity[index], 255), min(led_on.b / 2 + led_on.b / 2 * lightIntensity[index], 255));
 #endif
 
       updateLeds = true;  
@@ -279,7 +273,8 @@ void loop() {
 #ifndef KEY_DIVIDERS
         leds[index].setRGB(temp.r, temp.g, temp.b);
 #else
-        leds[index*2].setRGB(temp.r, temp.g, temp.b);
+        leds[index * 2].setRGB(temp.r, temp.g, temp.b);
+        
         if (i < 15){
           temp = serialLeds->getDivider(i);
           index = LightsUtils::getDividerIndex(i);
@@ -290,11 +285,15 @@ void loop() {
     }
 
 #if !defined(SERIAL_PLOT) && defined(USB)
-    if (key_states[i] != keyState)
-      output->sendKeyEvent(i, keyState);
+    if (key_states[i * 2] != stateTop)
+      output->sendKeyEvent(i * 2, stateTop);
+      
+    if (key_states[i * 2 + 1] != stateBot)
+      output->sendKeyEvent(i * 2 + 1, stateBot);
 #endif
 
-    key_states[i] = keyState;
+    key_states[i * 2] = stateTop;
+    key_states[i * 2 + 1] = stateBot;
   }
 
 #ifdef SERIAL_PLOT

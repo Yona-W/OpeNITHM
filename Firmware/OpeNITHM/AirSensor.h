@@ -12,12 +12,8 @@
 #include "AutoTouchboard.h"
 #include "PinConfig.h"
 #include <EEPROM.h>
-
-#ifdef USE_DMA_RGB
-  #include <WS2812Serial.h>
-  #define USE_WS2812SERIAL
-#endif
-
+#include <WS2812Serial.h>
+#define USE_WS2812SERIAL
 #include <FastLED.h>
 
 #define AIR_LED_DELAY 165
@@ -45,7 +41,6 @@ class AirSensor
     int samplesToSkip;
 
     bool calibrated[6];
-    bool digitalMode;
     
   public:
     AirSensor(int requiredSamples, int skippedSamples);
@@ -53,7 +48,6 @@ class AirSensor
     void saveConfig();
     void analogCalibrate();
     bool isCalibrated();
-    bool isDigital();
     bool getSensorState(int sensor);
     uint16_t getValue(int sensor);
     float getHandPosition();

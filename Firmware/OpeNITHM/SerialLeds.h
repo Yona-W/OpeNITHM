@@ -9,11 +9,8 @@
 #include "Config.h"
 
 #include <EEPROM.h>
-
-#ifdef USE_DMA_RGB
-  #include <WS2812Serial.h>
-  #define USE_WS2812SERIAL
-#endif
+#include <WS2812Serial.h>
+#define USE_WS2812SERIAL
 #include <FastLED.h>
 
 #define LIGHTS_FLAG 0xFF

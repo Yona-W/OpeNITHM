@@ -3,9 +3,12 @@
 //
 #include "AirSensor.h"
 
-#ifndef IR_SENSOR_MULTIPLEXED
-int ir_sensor_pins[6] = {AIR_SENSOR_0_PIN, AIR_SENSOR_1_PIN, AIR_SENSOR_2_PIN, AIR_SENSOR_3_PIN, AIR_SENSOR_4_PIN, AIR_SENSOR_5_PIN};
-#endif
+int ir_sensor_pins[6] = { AIR_SENSOR_0_PIN, 
+                          AIR_SENSOR_1_PIN, 
+                          AIR_SENSOR_2_PIN, 
+                          AIR_SENSOR_3_PIN, 
+                          AIR_SENSOR_4_PIN, 
+                          AIR_SENSOR_5_PIN };
 
 // Sets the output pins to switch the charlieplexed array of LEDs.
 // 0 is the bottom-most LED and 5 is the top-most
@@ -111,48 +114,13 @@ uint16_t AirSensor::getValue(int sensor)
 
   // Delay required because the read may occur faster than the physical light turning on
   delayMicroseconds(AIR_LED_DELAY);
-
-#ifdef IR_SENSOR_MULTIPLEXED
-  // Set multiplexer to corresponding sensor
-  digitalWrite(MUX_A, bitRead(sensor, 0));
-  digitalWrite(MUX_B, bitRead(sensor, 1));
-  digitalWrite(MUX_C, bitRead(sensor, 2));
-  // Return sensor value
-  if (digitalMode)
-    return digitalRead(SENSOR_IN);
-  else
-    return analogRead(SENSOR_IN);
-#else
-  if (digitalMode)
-    return digitalRead(ir_sensor_pins[sensor]);
-  else
-    return analogRead(ir_sensor_pins[sensor]);
-#endif
+  return analogRead(ir_sensor_pins[sensor]);
 }
 
 
 AirSensor::AirSensor(int requiredSamples, int skippedSamples) : thresholds{ 10000, 10000, 10000, 10000, 10000, 10000 }, samplesToAcquire(requiredSamples), samplesToSkip(skippedSamples), calibrated{ 0, 0, 0, 0, 0, 0 }
 {
-#ifdef IR_SENSOR_ANALOG
-  digitalMode = false;
-#else
-  digitalMode = true;
-#endif
-
-  if (digitalMode)
-  {
-    for (int i = 0; i < 6; i++)
-    {
-#ifndef IR_SENSOR_MULTIPLEXED
-      pinMode(ir_sensor_pins[i], INPUT);
-#endif
-      calibrated[i] = getValue(i);
-    }
-  }
-  else 
-  { 
-    analogCalibrate();
-  }
+  analogCalibrate();
 }
 
 void AirSensor::loadConfig()
@@ -176,7 +144,6 @@ void AirSensor::saveConfig()
 
 void AirSensor::analogCalibrate() 
 {
-#ifdef IR_SENSOR_ANALOG
   // we'll only calibrate if:
   //   * the user is holding the first 4 keys
   //   * the calibration flag is not set in EEPROM
@@ -193,17 +160,10 @@ void AirSensor::analogCalibrate()
     int touched = 0;
     touchboard->scan();
     
-#if NUM_SENSORS == 16
-    for (int i = 0; i < 4; i++) 
-    {
-      if (touchboard->update(i) != UNPRESSED) touched++;
-    }
-#elif NUM_SENSORS == 32
     for (int i = 0; i < 7; i += 2)
     {
-      if (touchboard->update(i) != UNPRESSED || touchboard->update(i + 1) != UNPRESSED) touched++;
+      if (touchboard->update(i) || touchboard->update(i + 1)) touched++;
     }
-#endif
 
     // force re-calibration if the first 4 keys are being held
     needsCalibration = (touched == 4);
@@ -310,7 +270,6 @@ void AirSensor::analogCalibrate()
   {
     loadConfig();
   }
-#endif
 }
 
 bool AirSensor::isCalibrated()
@@ -332,6 +291,7 @@ bool AirSensor::getSensorState(int sensor) {
   // Flash the LED and read the IR sensor
   uint16_t value = getValue(sensor);
   turnOffLight();
+  
   /*
   Serial.print("Sensor ");
   Serial.print(sensor);
@@ -340,32 +300,22 @@ bool AirSensor::getSensorState(int sensor) {
   Serial.print(" threshold ");
   Serial.println(thresholds[sensor]);
   */
-  if (digitalMode) 
+
+  if (calibrated[sensor]) 
   {
-    return value == LOW ? true : false;
-  }
+    return value < thresholds[sensor];
+  } 
   else 
   {
-    if (calibrated[sensor]) 
-    {
-      return value < thresholds[sensor];
-    } 
-    else 
-    {
-      return false;
-    }
+    return false;
   }
-}
-
-bool AirSensor::isDigital()
-{
-  return digitalMode;
 }
 
 // Using data from air sensors, compute the height of the player's hand, from 0 (not present) to 1 (highest possible position).
 float AirSensor::getHandPosition()
 {
   int highestTriggered = -1;
+  
   for (int i = 0; i < 6; i++)
   {
     if (getSensorState(i))
@@ -374,6 +324,7 @@ float AirSensor::getHandPosition()
         highestTriggered = i + 1;
     }
   }
+  
   return highestTriggered == -1 ? 0 : ((float)highestTriggered / 6.0f);
 }
 

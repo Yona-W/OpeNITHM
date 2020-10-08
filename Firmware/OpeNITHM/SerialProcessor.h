@@ -8,11 +8,8 @@
 #include "Config.h"
 #include "SerialLeds.h"
 
-#ifdef USE_DMA_RGB
-  #include <WS2812Serial.h>
-  #define USE_WS2812SERIAL
-#endif
-#include <FastLED.h>
+#include <WS2812Serial.h>
+#define USE_WS2812SERIAL
 
 // magic bytes we look for in the packet headers to identify whether it's LED updates or config commands
 #define LED_FLAG 0xAA

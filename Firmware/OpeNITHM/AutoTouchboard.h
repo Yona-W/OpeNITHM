@@ -8,12 +8,8 @@
 #include "USBOutput.h"
 
 #include <EEPROM.h>
-
-#ifdef USE_DMA_RGB
-  #include <WS2812Serial.h>
-  #define USE_WS2812SERIAL
-#endif
-
+#include <WS2812Serial.h>
+#define USE_WS2812SERIAL
 #include <FastLED.h>
 
 #define CALIBRATION_SAMPLES 80
@@ -31,15 +27,14 @@ class AutoTouchboard
 {
   private:
     uint16_t key_values[NUM_SENSORS];
-    uint16_t single_thresholds[NUM_SENSORS];
-    uint16_t double_thresholds[NUM_SENSORS];
+    uint16_t thresholds[NUM_SENSORS];
 
   public:
     AutoTouchboard();
     void scan();
     void loadConfig();
     void saveConfig();
-    KeyState update(int key);
+    bool update(int key);
     uint16_t getRawValue(int key);
     void calibrateKeys(bool forceCalibrate = false);
 };

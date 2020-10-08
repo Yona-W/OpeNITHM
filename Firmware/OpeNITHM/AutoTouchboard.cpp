@@ -1,13 +1,11 @@
 #include "AutoTouchboard.h"
 
-#if NUM_SENSORS == 32
 static const int sensorMap[] = {
   11, 3, 10, 2, 9, 1, 8, 0,
   31, 23, 30, 22, 29, 21, 28, 20,
   27, 19, 26, 18, 25, 17, 24, 16,
   15, 7, 14, 6, 13, 5, 12, 4
 };                             
-#endif
 
 void AutoTouchboard::scan()
 {
@@ -18,15 +16,10 @@ void AutoTouchboard::scan()
     digitalWrite(MUX_1, bitRead(i, 1));
     digitalWrite(MUX_2, bitRead(i, 2));
 
-#if NUM_SENSORS == 16
-    key_values[i] = (unsigned int) touchRead(TOUCH_0);
-    key_values[i + 8] = (unsigned int) touchRead(TOUCH_1);
-#elif NUM_SENSORS == 32
     key_values[sensorMap[i]] = (unsigned int) touchRead(TOUCH_0); 
     key_values[sensorMap[i + 8]] = (unsigned int) touchRead(TOUCH_1);
     key_values[sensorMap[i + 16]] = (unsigned int) touchRead(TOUCH_2);
     key_values[sensorMap[i + 24]] = (unsigned int) touchRead(TOUCH_3);
-#endif
   }
 }
 
@@ -34,10 +27,7 @@ void AutoTouchboard::loadConfig()
 {
   for (int i = 0; i < NUM_SENSORS; i++) 
   {
-    EEPROM.get(i * 2, single_thresholds[i]);
-#if NUM_SENSORS == 16
-    EEPROM.get((i * 2) + 32, double_thresholds[i]);
-#endif
+    EEPROM.get(i * 2, thresholds[i]);
   }
 }
 
@@ -45,10 +35,7 @@ void AutoTouchboard::saveConfig()
 {
   for (int i = 0; i < NUM_SENSORS; i++)
   {
-    EEPROM.put(i * 2, single_thresholds[i]);
-#if NUM_SENSORS == 16
-    EEPROM.put((i * 2) + 32, double_thresholds[i]);
-#endif
+    EEPROM.put(i * 2, thresholds[i]);
   }
 
   EEPROM.put(64, (byte) CALIBRATION_FLAG);
@@ -72,17 +59,10 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
     int touched = 0;
     scan();
 
-#if NUM_SENSORS == 16
-    for (int i = 12; i < 16; i++) 
-    {
-      if (update(i) != UNPRESSED) touched++;
-    }
-#elif NUM_SENSORS == 32
     for (int i = 24; i < 31; i += 2)
     {
-      if (update(i) != UNPRESSED || update(i + 1) != UNPRESSED) touched++;
+      if (update(i) || update(i + 1)) touched++;
     }
-#endif
 
     // force re-calibration if the last 4 keys are being held
     needsCalibration = (touched == 4);
@@ -101,8 +81,7 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
     for (int i = 0; i < NUM_SENSORS; i++)
     {
       key_values[i] = 0;
-      single_thresholds[i] = 0xFFFF;
-      double_thresholds[i] = 0xFFFF;
+      thresholds[i] = 0xFFFF;
       maxReadings[i] = 0;
     }
 
@@ -152,21 +131,13 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
     // and doubles
     for (int i = 0; i < NUM_SENSORS; i++) 
     {
-      CRGB color;
-      int lightIndex;
-
       // In 16-key mode, the key stays red until we detect a touch, then turns silver while the readings
       // are being taken, then turns green. In 32-key mode, the key stays red until it detects the top
       // sensor touched, then the key turns purple during readings for the top sensor, then turns yellow.
       // Once it's yellow, it performs the same process for the bottom sensor, then turns green and moves
       // to the next key.
-#if NUM_SENSORS == 16
-      color = CRGB::Red;
-      lightIndex = i;
-#elif NUM_SENSORS == 32
-      color = (i % 2 == 0) ? CRGB::Red : CRGB::Yellow;
-      lightIndex = i / 2;
-#endif
+      CRGB color = (i % 2 == 0) ? CRGB::Red : CRGB::Yellow;
+      int lightIndex = i / 2;
 
 #ifndef KEY_DIVIDERS
         leds[lightIndex] = color; 
@@ -196,11 +167,7 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
         maxReadings[i] = max(maxReadings[i], key_values[i]);
       }
       
-#if NUM_SENSORS == 16
-      color = CRGB::Green;
-#elif NUM_SENSORS == 32
       color = (i % 2 == 0) ? CRGB::Yellow : CRGB::Green;
-#endif
 
 #ifndef KEY_DIVIDERS
         leds[lightIndex] = color; 
@@ -211,8 +178,7 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
       FastLED.show();
   
       uint16_t window = (maxReadings[i] - baselines[i]) * TOUCH_INPUT_THRESHOLD;
-      single_thresholds[i] = baselines[i] + window;
-      double_thresholds[i] = baselines[i] + (2 * window);
+      thresholds[i] = baselines[i] + window;
     }
 
     saveConfig();
@@ -232,19 +198,9 @@ void AutoTouchboard::calibrateKeys(bool forceCalibrate = false)
   }
 }
 
-KeyState AutoTouchboard::update(int key)
+bool AutoTouchboard::update(int key)
 {
-#if NUM_SENSORS == 16
-  if (key_values[key] > double_thresholds[key])
-    return DOUBLE_PRESS;
-  else if (key_values[key] > single_thresholds[key])
-    return SINGLE_PRESS;
-#elif NUM_SENSORS == 32
-  if (key_values[key] > single_thresholds[key])
-    return SINGLE_PRESS;
-#endif
-  else
-    return UNPRESSED;
+  return (key_values[key] > thresholds[key]);
 }
 
 uint16_t AutoTouchboard::getRawValue(int key)

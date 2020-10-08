@@ -12,12 +12,8 @@ void SerialProcessor::processConfigCommand(uint8_t* buf)
     case CMD_PRINT_INFO:
       byte bytes[200];
       
-          // whether the air sensor is analog or not
-#ifdef IR_SENSOR_ANALOG
+      // whether the air sensor is analog or not
       bytes[0] = 0x11;
-#else
-      bytes[0] = 0x00;
-#endif
       // slider on color
       bytes[1] = led_on.r;
       bytes[2] = led_on.g;
