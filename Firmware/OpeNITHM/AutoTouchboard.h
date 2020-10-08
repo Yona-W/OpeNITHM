@@ -29,8 +29,8 @@ class AutoTouchboard
 {
   private:
     // these will be tunable / need to be experimented ith
-    int deltaThreshold = 5;
-    int releaseHysteresis = 2;
+    int deltaThreshold = 4;
+    int releaseHysteresis = 1;
     
     uint16_t key_values[NUM_SENSORS];
     bool states[NUM_SENSORS];
