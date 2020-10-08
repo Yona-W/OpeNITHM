@@ -9,8 +9,14 @@
 // Select which OpeNITHM board you're using. If you are not using an OpeNITHM
 // board and have hand-wired your controller, it's strongly advised to use 
 // the pinout and configurations for OPENITHM_V1_1
+// #define OPENITHM_V1_0   // Version 1.0 (No version number on board)
+// #define OPENITHM_V1_1   // Version 1.1 (v1.1 on board under logo)
 #define OPENITHM_V2_0   // Version 2.0 (v2.0 in upper left of board)
 // #define OPENITHM_V2_1   // Version 2.1 (v2.1 in upper left of board)
+
+// Uncomment this line if your IR sensors will be used in analog mode
+// ** OPENITHM_V1_1 AND ABOVE SHOULD ENABLE THIS OPTION **
+#define IR_SENSOR_ANALOG
 
 // Comment this line for default Seaurchin air sensor bindings
 // Uncomment this line if your IR sensors will each be mapped to separate keyboard key
@@ -23,6 +29,12 @@
 // Uncomment this if you have lighted separators between the keys in your controller.
 // This option is *not* applicable to the standard 3D printed controller builds.
 #define KEY_DIVIDERS
+
+// Uncomment this if one of the following applies to you:
+//  * You are using OPENITHM_V2_0 or below and have bridged pins 17 and 24 on your Teensy, or
+//  * You are using a revision newer than OPENITHM_V2_0
+#define USE_DMA_RGB
+
 
 
 
@@ -63,6 +75,10 @@
 #endif
 #endif
 
+#if (defined(OPENITHM_V2_0) || defined(OPENITHM_V2_1))
 #define NUM_SENSORS  32
+#else
+#define NUM_SENSORS  16
+#endif
 
 #endif // _CONFIG_h

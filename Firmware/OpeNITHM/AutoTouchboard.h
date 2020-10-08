@@ -9,8 +9,12 @@
 #include "USBOutput.h"
 
 #include <EEPROM.h>
-#include <WS2812Serial.h>
-#define USE_WS2812SERIAL
+
+#ifdef USE_DMA_RGB
+  #include <WS2812Serial.h>
+  #define USE_WS2812SERIAL
+#endif
+
 #include <FastLED.h>
 
 // for hit detection, we keep a running record of the last X number
@@ -28,20 +32,26 @@ extern CRGB leds[31];
 class AutoTouchboard
 {
   private:
-    // these will be tunable / need to be experimented ith
+    // these will be tunable / need to be experimented with
+#if NUM_SENSORS == 32
     int deltaThreshold = 4;
     int releaseHysteresis = 1;
+#else
+    int deltaThreshold = 6;
+    int releaseHysteresis = 2;
+#endif
     
     uint16_t key_values[NUM_SENSORS];
-    bool states[NUM_SENSORS];
-    int releaseThresholds[NUM_SENSORS];
+    KeyState states[NUM_SENSORS];
+    int releaseThresholdsSingle[NUM_SENSORS];
+    int releaseThresholdsDouble[NUM_SENSORS];
     int lastReadings[NUM_SENSORS];
     RunningSum* deltas[NUM_SENSORS];
 
   public:
     AutoTouchboard();
     void scan();
-    bool update(int key);
+    KeyState update(int key);
     uint16_t getRawValue(int key);
     void calibrateKeys();
 };

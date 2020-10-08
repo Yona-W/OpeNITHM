@@ -11,6 +11,13 @@
 #include "WProgram.h"
 #endif
 
+enum KeyState 
+{
+  UNPRESSED,
+  SINGLE_PRESS,
+  DOUBLE_PRESS
+};
+
 class USBOutput
 {
   private:
@@ -20,7 +27,8 @@ class USBOutput
     void pressKey(uint16_t key);
     void releaseKey(uint16_t key);
   public:
-    void sendKeyEvent(int sensor, bool pressed);
+    void sendKeyEvent(int key, bool pressed, bool doublePressed);
+    void sendKeyEvent(int key, KeyState keyState);
     void sendSensorEvent(float position);
     void sendSensor(int sensor);
     void sendUpdate();
