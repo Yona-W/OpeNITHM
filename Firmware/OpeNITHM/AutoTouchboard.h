@@ -5,7 +5,6 @@
 
 #include "Config.h"
 #include "PinConfig.h"
-#include "RunningSum.h"
 #include "USBOutput.h"
 
 #include <EEPROM.h>
@@ -26,8 +25,7 @@ extern CRGB leds[16];
 extern CRGB leds[31];
 #endif
 
-// the size of the buffer of deltas to keep for each key
-#define NUM_READINGS 10
+#define CALIBRATION_PERIOD 15000
 
 class AutoTouchboard
 {
@@ -35,18 +33,20 @@ class AutoTouchboard
     // these will be tunable / need to be experimented with
 #if NUM_SENSORS == 32
     int deltaThreshold = 4;
-    int releaseHysteresis = 1;
+    double releaseThreshold = 0.8;
 #else
     int deltaThreshold = 6;
-    int releaseHysteresis = 2;
+    double releaseThreshold = 0.8;
 #endif
     
     uint16_t key_values[NUM_SENSORS];
     KeyState states[NUM_SENSORS];
+    int triggerThresholdsSingle[NUM_SENSORS];
     int releaseThresholdsSingle[NUM_SENSORS];
+    int triggerThresholdsDouble[NUM_SENSORS];
     int releaseThresholdsDouble[NUM_SENSORS];
-    int lastReadings[NUM_SENSORS];
-    RunningSum* deltas[NUM_SENSORS];
+    unsigned long lastTriggerTimes[NUM_SENSORS];
+    void calcThresholds(int key, int pressure);
 
   public:
     AutoTouchboard();

@@ -61,21 +61,18 @@ void AutoTouchboard::calibrateKeys()
   }
 
   // Take the initial baseline readings so we can populate our delta buffer
-  int value;
+  scan();
   
-  for (int r = 0; r < NUM_READINGS; r++) {
-    scan();
-
-    for (int i = 0; i < NUM_SENSORS; i++) {
-      value = key_values[i];
-
-      // calculate the newest delta if it's not the first reading
-      if (r > 0) {
-        deltas[i]->addValue(value - lastReadings[i]);
-      }
-
-      lastReadings[i] = value;
-    }
+  int value;
+  // take some initial readings before the main loop so we can establish baselines
+  for (int i = 0; i < NUM_SENSORS; i++) {
+    // determine the current thresholds for trigger
+    // and release based on the configured delta threhsold
+    // and the current readings
+    value = key_values[i];
+    
+    states[i] = UNPRESSED;
+    calcThresholds(i, value);
   }
 
   // Flash the slider green for a couple of seconds to show success
@@ -96,51 +93,35 @@ KeyState AutoTouchboard::update(int key)
 {
   // check if the button is pressed
   // keep a running record of the last X deltas and the latest readings
-  int value = key_values[key];
-  deltas[key]->addValue(value - lastReadings[key]);
-  lastReadings[key] = value;
-  bool deltaTriggered = (deltas[key]->getSum() > deltaThreshold);
+  int pressure = key_values[key];
+  unsigned long currMillis = millis();
 
+  if (states[key] == UNPRESSED) {
+    // new press detected
+    if (pressure > triggerThresholdsDouble[key]) {
+      lastTriggerTimes[key] = currMillis;
+      states[key] = DOUBLE_PRESS;
+    } else if (pressure > triggerThresholdsSingle[key]) {
+      lastTriggerTimes[key] = currMillis;
+      states[key] = SINGLE_PRESS;
+    // the key hasn't been triggered, so we'll check how long it's been since
+    // the last trigger. if it's been more than the configured period, re-establish
+    // baselines for thresholds
+    } else if (currMillis - lastTriggerTimes[key] > CALIBRATION_PERIOD) {
+      calcThresholds(key, pressure);
+    }
+  // new release detected
+  } else if (states[key] != UNPRESSED) {
+    if (pressure < releaseThresholdsSingle[key]) {
+      states[key] = UNPRESSED;
+    } else if (pressure < releaseThresholdsDouble[key]) {
+      states[key] = SINGLE_PRESS;
+    }
+  }
+  
 #if NUM_SENSORS == 32
-  // check the readout data and the running sum of the deltas;
-  // if running sum of deltas goes above our defined threshold,
-  // trigger a press and set new lower bounds for release,
-  // otherwise, check for a release
-  if (states[key] == UNPRESSED && deltaTriggered) {
-    // set a new release threshold based on the reading at the time we detected
-    // the press (minus the threshold + a small hysteresis factor)
-    releaseThresholdsSingle[key] = value - deltaThreshold + releaseHysteresis;
-    states[key] = SINGLE_PRESS;
-  } else if (states[key] != UNPRESSED && (value < releaseThresholdsSingle[key])) {
-    // new release
-    states[key] = UNPRESSED;
-    releaseThresholdsSingle[key] = 0;
-  }
-#elif NUM_SENSORS == 16
-  // check for new single press
-  if (states[key] == UNPRESSED && deltaTriggered) {
-    // set a new single release threshold based on the reading at the time we detected
-    // the press (minus the threshold + a small hysteresis factor)
-    releaseThresholdsSingle[key] = value - deltaThreshold + releaseHysteresis;
-    states[key] = SINGLE_PRESS;
-  }
-  // check for new double press
-  else if (states[key] == SINGLE_PRESS && deltaTriggered) {
-    // set a new release threshold based on the reading at the time we detected
-    // the press (minus the threshold + a small hysteresis factor)
-    releaseThresholdsDouble[key] = value - deltaThreshold + releaseHysteresis;
-    states[key] = DOUBLE_PRESS;
-  }
-  // check for double -> single release
-  else if (states[key] == DOUBLE_PRESS && (value < releaseThresholdsDouble[key]) && (value > releaseThresholdsSingle[key])) {
-    states[key] = SINGLE_PRESS;
-    releaseThresholdsDouble[key] = 0;
-  } 
-  // check for any press (single or double) to no press)
-  else if (states[key] != UNPRESSED && value < releaseThresholdsSingle[key]) {
-    states[key] = UNPRESSED;
-    releaseThresholdsSingle[key] = 0;
-    releaseThresholdsDouble[key] = 0;
+  if (states[key] == DOUBLE_PRESS) {
+    states[key] == SINGLE_PRESS;
   }
 #endif
   
@@ -152,16 +133,20 @@ uint16_t AutoTouchboard::getRawValue(int key)
   return key_values[key];
 }
 
+void AutoTouchboard::calcThresholds(int key, int pressure)
+{
+  triggerThresholdsSingle[key] = pressure + deltaThreshold;
+  releaseThresholdsSingle[key] = pressure + (deltaThreshold * releaseThreshold);
+  triggerThresholdsDouble[key] = triggerThresholdsSingle[key] + (0.8 * deltaThreshold);
+  releaseThresholdsDouble[key] = triggerThresholdsSingle[key] + (0.8 * deltaThreshold * releaseThreshold);
+  lastTriggerTimes[key] = millis();
+}
+
 AutoTouchboard::AutoTouchboard()
 {
   pinMode(MUX_0, OUTPUT);
   pinMode(MUX_1, OUTPUT);
   pinMode(MUX_2, OUTPUT);
-
-  for (int i = 0; i < NUM_SENSORS; i++) {
-    deltas[i] = new RunningSum(NUM_READINGS);
-    states[i] = UNPRESSED;
-  }
-
+  
   calibrateKeys();
 }
