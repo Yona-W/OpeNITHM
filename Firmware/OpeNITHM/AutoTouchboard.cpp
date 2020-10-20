@@ -99,16 +99,9 @@ KeyState AutoTouchboard::update(int key)
   if (states[key] == UNPRESSED) {
     // new press detected
     if (pressure > triggerThresholdsDouble[key]) {
-      lastTriggerTimes[key] = currMillis;
       states[key] = DOUBLE_PRESS;
     } else if (pressure > triggerThresholdsSingle[key]) {
-      lastTriggerTimes[key] = currMillis;
       states[key] = SINGLE_PRESS;
-    // the key hasn't been triggered, so we'll check how long it's been since
-    // the last trigger. if it's been more than the configured period, re-establish
-    // baselines for thresholds
-    } else if (currMillis - lastTriggerTimes[key] > CALIBRATION_PERIOD) {
-      calcThresholds(key, pressure);
     }
   // new release detected
   } else if (states[key] != UNPRESSED) {
@@ -137,9 +130,8 @@ void AutoTouchboard::calcThresholds(int key, int pressure)
 {
   triggerThresholdsSingle[key] = pressure + deltaThreshold;
   releaseThresholdsSingle[key] = pressure + (deltaThreshold * releaseThreshold);
-  triggerThresholdsDouble[key] = triggerThresholdsSingle[key] + (0.8 * deltaThreshold);
-  releaseThresholdsDouble[key] = triggerThresholdsSingle[key] + (0.8 * deltaThreshold * releaseThreshold);
-  lastTriggerTimes[key] = millis();
+  triggerThresholdsDouble[key] = triggerThresholdsSingle[key] + (deltaThreshold);
+  releaseThresholdsDouble[key] = triggerThresholdsSingle[key] + (deltaThreshold * releaseThreshold);
 }
 
 AutoTouchboard::AutoTouchboard()

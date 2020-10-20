@@ -25,14 +25,12 @@ extern CRGB leds[16];
 extern CRGB leds[31];
 #endif
 
-#define CALIBRATION_PERIOD 15000
-
 class AutoTouchboard
 {
   private:
     // these will be tunable / need to be experimented with
 #if NUM_SENSORS == 32
-    int deltaThreshold = 4;
+    int deltaThreshold = 5;
     double releaseThreshold = 0.8;
 #else
     int deltaThreshold = 6;
@@ -45,7 +43,7 @@ class AutoTouchboard
     int releaseThresholdsSingle[NUM_SENSORS];
     int triggerThresholdsDouble[NUM_SENSORS];
     int releaseThresholdsDouble[NUM_SENSORS];
-    unsigned long lastTriggerTimes[NUM_SENSORS];
+    
     void calcThresholds(int key, int pressure);
 
   public:
