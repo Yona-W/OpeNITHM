@@ -11,6 +11,9 @@ void SerialLeds::saveLights() {
   EEPROM.put(71, led_off.r);
   EEPROM.put(72, led_off.g);
   EEPROM.put(73, led_off.b);
+  EEPROM.put(40, divider_color.r);
+  EEPROM.put(41, divider_color.g);
+  EEPROM.put(42, divider_color.b);
 }
 
 void SerialLeds::loadLights() {
@@ -20,6 +23,9 @@ void SerialLeds::loadLights() {
   EEPROM.get(71, led_off.r);
   EEPROM.get(72, led_off.g);
   EEPROM.get(73, led_off.b);
+  EEPROM.get(40, divider_color.r);
+  EEPROM.get(41, divider_color.g);
+  EEPROM.get(42, divider_color.b);
 }
 
 void SerialLeds::processBulk(uint8_t *buf)

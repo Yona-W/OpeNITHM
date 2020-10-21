@@ -15,13 +15,14 @@
 
 */
 
-char bottomRow[] = {KEY_A, KEY_Z, KEY_S, KEY_X, KEY_D, KEY_C, KEY_F, KEY_V, KEY_G, KEY_B, KEY_H, KEY_N, KEY_J, KEY_M, KEY_K, KEY_COMMA};
-char topRow[] = {KEY_1, KEY_Q, KEY_2, KEY_W, KEY_3, KEY_E, KEY_4, KEY_R, KEY_5, KEY_T, KEY_6, KEY_Y, KEY_7, KEY_U, KEY_8, KEY_I};
+char topRow[] = { KEY_1, KEY_Q, KEY_2, KEY_W, KEY_3, KEY_E, KEY_4, KEY_R, KEY_5, KEY_T, KEY_6, KEY_Y, KEY_7, KEY_U, KEY_8, KEY_I };
+char bottomRow[] = { KEY_A, KEY_Z, KEY_S, KEY_X, KEY_D, KEY_C, KEY_F, KEY_V, KEY_G, KEY_B, KEY_H, KEY_N, KEY_J, KEY_M, KEY_K, KEY_COMMA };
 
 uint16_t airKeys[] = { KEY_SLASH, KEY_PERIOD, KEY_QUOTE , KEY_SEMICOLON, KEY_RIGHT_BRACE , KEY_LEFT_BRACE };
 
 void USBOutput::sendKeyEvent(int key, KeyState state)
 {
+#if NUM_SENSORS == 16
   switch (state)
   {
     case KeyState::UNPRESSED:
@@ -37,6 +38,21 @@ void USBOutput::sendKeyEvent(int key, KeyState state)
       pressKey(topRow[key]);
       break;
   }
+#else
+  if (state == UNPRESSED) {
+    if (key % 2 == 0) {
+      releaseKey(topRow[key / 2]);
+    } else {
+      releaseKey(bottomRow[(key - 1) / 2]);
+    }
+  } else {
+    if (key % 2 == 0) {
+      pressKey(topRow[key / 2]);
+    } else {
+      pressKey(bottomRow[(key - 1) / 2]);
+    }
+  }
+#endif
 }
 
 void USBOutput::sendSensorEvent(float position)

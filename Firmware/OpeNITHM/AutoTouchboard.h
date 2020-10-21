@@ -25,18 +25,19 @@ extern CRGB leds[16];
 extern CRGB leds[31];
 #endif
 
-class AutoTouchboard
-{
+class AutoTouchboard {
   private:
     // these will be tunable / need to be experimented with
 #if NUM_SENSORS == 32
-    int deltaThreshold = 5;
+    int deltaThreshold = 6;
     double releaseThreshold = 0.8;
 #else
     int deltaThreshold = 6;
     double releaseThreshold = 0.8;
 #endif
     
+    int calibrationCounter;
+    bool calibrated;
     uint16_t key_values[NUM_SENSORS];
     KeyState states[NUM_SENSORS];
     int triggerThresholdsSingle[NUM_SENSORS];
@@ -52,6 +53,7 @@ class AutoTouchboard
     KeyState update(int key);
     uint16_t getRawValue(int key);
     void calibrateKeys();
+    bool isCalibrated() { return calibrated; }
 };
 
 #endif

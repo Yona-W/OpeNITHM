@@ -21,6 +21,7 @@
 extern bool updateLeds;
 extern CRGB led_on;
 extern CRGB led_off;
+extern CRGB divider_color;
 
 typedef struct {
   uint8_t b;

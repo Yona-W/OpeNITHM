@@ -9,11 +9,9 @@ static const int sensorMap[] = {
 };                             
 #endif
 
-void AutoTouchboard::scan()
-{
+void AutoTouchboard::scan() {
   // For each key, set multiplexers and poll both capacitive sensors simultaneously
-  for (int i = 0; i < 8; i++)
-  {
+  for (int i = 0; i < 8; i++) {
     digitalWrite(MUX_0, bitRead(i, 0));
     digitalWrite(MUX_1, bitRead(i, 1));
     digitalWrite(MUX_2, bitRead(i, 2));
@@ -28,43 +26,42 @@ void AutoTouchboard::scan()
     key_values[sensorMap[i + 24]] = (unsigned int) touchRead(TOUCH_3);
 #endif
   }
+
+  
+  for (int i = 0; i < 4; i++) {
+    Serial.print(key_values[i]);
+    Serial.print("\t");
+  }
+
+  for (int i = 0; i < 4; i++) {
+    Serial.print(triggerThresholdsSingle[i]);
+    Serial.print("\t");
+  }
+
+  Serial.println();
+  
 }
 
-void AutoTouchboard::calibrateKeys()
-{
-  // Flash every key red a few times so they know to let go of the slider while we self-calibrate
-  for (int i = 0; i < 5; i++) 
-  {
-    for (int j = 0; j < 16; j++)
-    {
-#ifndef KEY_DIVIDERS
-      leds[j] = CRGB::Red; 
-#else
-      leds[j*2] = CRGB::Red;
-#endif
-    }
-
+void AutoTouchboard::calibrateKeys() {
+  // Flash the slider red and purple so the user doesn't get near the controller during calibration
+  for (int i = 0; i < 3; i++) {
+    for (CRGB& led : leds)
+      led = CRGB::Red;
+      
     FastLED.show();
     delay(500);
 
-    for (int j = 0; j < 16; j++)
-    {
-#ifndef KEY_DIVIDERS
-      leds[j] = CRGB::Purple; 
-#else
-      leds[j*2] = CRGB::Purple;
-#endif
-    }
-
+    for (CRGB& led : leds)
+      led = CRGB::Purple;
+      
     FastLED.show();
     delay(500);
   }
-
-  // Take the initial baseline readings so we can populate our delta buffer
+  
+  // take some initial readings before the main loop so we can establish baselines
   scan();
   
   int value;
-  // take some initial readings before the main loop so we can establish baselines
   for (int i = 0; i < NUM_SENSORS; i++) {
     // determine the current thresholds for trigger
     // and release based on the configured delta threhsold
@@ -75,22 +72,10 @@ void AutoTouchboard::calibrateKeys()
     calcThresholds(i, value);
   }
 
-  // Flash the slider green for a couple of seconds to show success
-  for (int j = 0; j < 16; j++)
-  {
-#ifndef KEY_DIVIDERS
-    leds[j] = CRGB::Green;
-#else
-    leds[j * 2] = CRGB::Green;
-#endif
-  }
-
-  FastLED.show();
-  delay(1000);
+  calibrated = true;
 }
 
-KeyState AutoTouchboard::update(int key)
-{
+KeyState AutoTouchboard::update(int key) {
   // check if the button is pressed
   // keep a running record of the last X deltas and the latest readings
   int pressure = key_values[key];
@@ -117,25 +102,33 @@ KeyState AutoTouchboard::update(int key)
     states[key] == SINGLE_PRESS;
   }
 #endif
-  
-  return states[key];
+
+  if (calibrated) {
+    return states[key];
+  } else {
+    calibrationCounter--;
+    
+    if (calibrationCounter <= 0) {
+      calibrateKeys();
+      calibrated = true;
+    }
+
+    return UNPRESSED;
+  }
 }
 
-uint16_t AutoTouchboard::getRawValue(int key)
-{
+uint16_t AutoTouchboard::getRawValue(int key) {
   return key_values[key];
 }
 
-void AutoTouchboard::calcThresholds(int key, int pressure)
-{
+void AutoTouchboard::calcThresholds(int key, int pressure) {
   triggerThresholdsSingle[key] = pressure + deltaThreshold;
   releaseThresholdsSingle[key] = pressure + (deltaThreshold * releaseThreshold);
   triggerThresholdsDouble[key] = triggerThresholdsSingle[key] + (deltaThreshold);
   releaseThresholdsDouble[key] = triggerThresholdsSingle[key] + (deltaThreshold * releaseThreshold);
 }
 
-AutoTouchboard::AutoTouchboard()
-{
+AutoTouchboard::AutoTouchboard() {
   pinMode(MUX_0, OUTPUT);
   pinMode(MUX_1, OUTPUT);
   pinMode(MUX_2, OUTPUT);
