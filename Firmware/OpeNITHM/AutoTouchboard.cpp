@@ -99,7 +99,7 @@ KeyState AutoTouchboard::update(int key) {
   
 #if NUM_SENSORS == 32
   if (states[key] == DOUBLE_PRESS) {
-    states[key] == SINGLE_PRESS;
+    states[key] = SINGLE_PRESS;
   }
 #endif
 

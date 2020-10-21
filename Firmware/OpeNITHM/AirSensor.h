@@ -21,7 +21,9 @@
 #include <FastLED.h>
 
 #define AIR_LED_DELAY 100
-#define CALIBRATION_SAMPLES 100
+#define AIR_INPUT_DETECTION 0.90
+#define CALIBRATION_SAMPLES 200
+#define SKIP_SAMPLES 40
 
 #ifndef KEY_DIVIDERS
 extern CRGB leds[16];
@@ -29,17 +31,15 @@ extern CRGB leds[16];
 extern CRGB leds[31];
 #endif
 
+extern AutoTouchboard *touchboard;
+
 class AirSensor {
   private:
-    int deltaThreshold = 45;
-    double releaseThreshold = 0.5;
     int calibrationCounter;
     bool calibrated;
-    bool states[6];
-    int triggerThresholds[6];
-    int releaseThresholds[6];
+    uint16_t thresholds[6];
+    uint16_t maxReadings[6];
     
-    void calcThresholds(int sensor, int value);
     void changeLight(int light);
     void turnOffLight();
     

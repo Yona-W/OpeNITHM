@@ -90,10 +90,13 @@ uint16_t AirSensor::getValue(int sensor) {
   turnOffLight();
 }
 
-
 AirSensor::AirSensor() {
   calibrationCounter = 10;
   calibrated = false;
+
+  for (int i = 0; i < 6; i++) {
+    maxReadings[i] = 0;
+  }
   
 #ifndef IR_SENSOR_ANALOG
   for (int i = 0; i < 6; i++) {
@@ -103,63 +106,67 @@ AirSensor::AirSensor() {
 }
 
 void AirSensor::analogCalibrate() {
+
 #ifdef IR_SENSOR_ANALOG
-  // Flash the slider red and purple so the user doesn't get near the controller during calibration
-  for (int i = 0; i < 3; i++) {
-    for (CRGB& led : leds)
-      led = CRGB::Red;
-      
-    FastLED.show();
-    delay(500);
+  for (CRGB& led : leds)
+    led = CRGB::Red;
+    
+  FastLED.show();
 
-    for (CRGB& led : leds)
-      led = CRGB::Purple;
-      
-    FastLED.show();
-    delay(500);
-  }
-
-  // take some initial readings before the main loop so we can establish baselines
-  uint16_t max_values[6] = { 0, 0, 0, 0, 0, 0 };
-  for (int sample = 0; sample < CALIBRATION_SAMPLES; sample++) {
-    for (int i = 0; i < 6; i++) {
-      max_values[i] = max(max_values[i], getValue(i));
+  // Skip some samples, for some reason the first few readings tend to give wild values that can skew min/max tracking
+  for (int i = 0; i < SKIP_SAMPLES; i++) {
+    for (int sensor = 0; sensor < 6; sensor++) {
+      getValue(sensor);
+      touchboard -> scan();
     }
   }
-  
+
+  // begin calibration
+  for (int i = 0; i < CALIBRATION_SAMPLES; i++) {
+    for (int sensor = 0; sensor < 6; sensor++) {
+      uint16_t value = getValue(sensor);
+
+      if (value > maxReadings[sensor])
+        maxReadings[sensor] = value;
+    }
+
+    // after sweeping the LEDs, scan the touchboard to simulate the delay between
+    // IR sweeps during actual gameplay so we calibrate accurately
+    touchboard -> scan();
+  }
+
   for (int i = 0; i < 6; i++) {
-    states[i] = false;
-    calcThresholds(i, max_values[i]);
+    thresholds[i] = (AIR_INPUT_DETECTION * maxReadings[i]);
   }
 #endif
 
+  for (CRGB& led : leds)
+    led = CRGB::Green;
+    
+  FastLED.show();
+  delay(3000);
+    
   calibrated = true;
 }
 
 bool AirSensor::getSensorState(int sensor) {
   uint16_t value = getValue(sensor);
+
   
-/*
   Serial.print(sensor);
   Serial.print("\t");
   Serial.print(value);
   Serial.print("\t");
-  Serial.print(triggerThresholds[sensor]);
+  Serial.print(maxReadings[sensor]);
+  Serial.print("\t");
+  Serial.print(thresholds[sensor]);
   Serial.println();
-*/
+  
 
 #ifndef IR_SENSOR_ANALOG
   return value == LOW ? true : false;
 #else
-  if (!states[sensor]) {
-    if (value <= triggerThresholds[sensor]) {
-      states[sensor] = true;
-    }
-  } else if (states[sensor] && (value >= releaseThresholds[sensor])) {
-    states[sensor] = false;
-  }
-
-  return states[sensor];
+  return value < thresholds[sensor];
 #endif
 }
 
@@ -196,7 +203,6 @@ uint8_t AirSensor::getSensorReadings() {
     reading |= ((int) getSensorState(i) << i);
   }
 
-  // skip the first N readings and then calibrate
   if (calibrated) {
     return reading;
   } else {
@@ -209,10 +215,4 @@ uint8_t AirSensor::getSensorReadings() {
 
     return 0;
   }
-  
-}
-
-void AirSensor::calcThresholds(int sensor, int value) {
-  triggerThresholds[sensor] = value - deltaThreshold;
-  releaseThresholds[sensor] = value - (deltaThreshold * releaseThreshold);
 }
