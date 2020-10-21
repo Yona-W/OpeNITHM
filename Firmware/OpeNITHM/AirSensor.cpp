@@ -120,14 +120,16 @@ void AirSensor::analogCalibrate() {
   }
 
   // take some initial readings before the main loop so we can establish baselines
+  uint16_t max_values[6] = { 0, 0, 0, 0, 0, 0 };
+  for (int sample = 0; sample < CALIBRATION_SAMPLES; sample++) {
+    for (int i = 0; i < 6; i++) {
+      max_values[i] = max(max_values[i], getValue(i));
+    }
+  }
+  
   for (int i = 0; i < 6; i++) {
-    // determine the current thresholds for trigger
-    // and release based on the configured delta threhsold
-    // and the current readings
-    uint16_t value = getValue(i);
-    
     states[i] = false;
-    calcThresholds(i, value);
+    calcThresholds(i, max_values[i]);
   }
 #endif
 

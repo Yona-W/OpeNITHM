@@ -20,7 +20,8 @@
 
 #include <FastLED.h>
 
-#define AIR_LED_DELAY 135
+#define AIR_LED_DELAY 100
+#define CALIBRATION_SAMPLES 100
 
 #ifndef KEY_DIVIDERS
 extern CRGB leds[16];
@@ -30,7 +31,7 @@ extern CRGB leds[31];
 
 class AirSensor {
   private:
-    int deltaThreshold = 80;
+    int deltaThreshold = 45;
     double releaseThreshold = 0.5;
     int calibrationCounter;
     bool calibrated;
