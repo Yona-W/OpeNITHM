@@ -129,6 +129,9 @@ void AutoTouchboard::calcThresholds(int key, int pressure) {
 }
 
 AutoTouchboard::AutoTouchboard() {
+  calibrationCounter = 10;
+  calibrated = false;
+  
   pinMode(MUX_0, OUTPUT);
   pinMode(MUX_1, OUTPUT);
   pinMode(MUX_2, OUTPUT);
