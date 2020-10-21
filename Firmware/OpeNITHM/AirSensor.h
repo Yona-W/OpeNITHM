@@ -31,8 +31,7 @@ extern CRGB leds[31];
 class AirSensor {
   private:
     int deltaThreshold = 80;
-    double releaseThreshold = 0.5
-    ;
+    double releaseThreshold = 0.5;
     int calibrationCounter;
     bool calibrated;
     bool states[6];

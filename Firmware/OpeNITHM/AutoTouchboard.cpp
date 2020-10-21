@@ -27,7 +27,7 @@ void AutoTouchboard::scan() {
 #endif
   }
 
-  
+/*
   for (int i = 0; i < 4; i++) {
     Serial.print(key_values[i]);
     Serial.print("\t");
@@ -39,7 +39,7 @@ void AutoTouchboard::scan() {
   }
 
   Serial.println();
-  
+*/
 }
 
 void AutoTouchboard::calibrateKeys() {

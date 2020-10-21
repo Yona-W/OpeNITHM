@@ -1,6 +1,3 @@
-//
-//
-//
 #include "AirSensor.h"
 
 int ir_sensor_pins[6] = { AIR_SENSOR_0_PIN, AIR_SENSOR_1_PIN, AIR_SENSOR_2_PIN, AIR_SENSOR_3_PIN, AIR_SENSOR_4_PIN, AIR_SENSOR_5_PIN };
