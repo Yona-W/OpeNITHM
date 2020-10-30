@@ -73,7 +73,7 @@ void setup() {
   #endif
 
   // Uncomment this to clear EEPROM, flash once, then comment and re-flash
-  for(int i = 0; i < 128; i++) EEPROM.put(i, 0);
+  // for(int i = 0; i < 128; i++) EEPROM.put(i, 0);
   
   initializeController();
   lastMillis = millis();

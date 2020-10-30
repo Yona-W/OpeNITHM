@@ -27,19 +27,19 @@ void AutoTouchboard::scan() {
 #endif
   }
 
-/*
-  for (int i = 0; i < 4; i++) {
+  /*
+  for (int i = 11; i < 12; i++) {
     Serial.print(key_values[i]);
     Serial.print("\t");
   }
 
-  for (int i = 0; i < 4; i++) {
+  for (int i = 11; i < 12; i++) {
     Serial.print(triggerThresholdsSingle[i]);
     Serial.print("\t");
   }
 
   Serial.println();
-*/
+  */
 }
 
 void AutoTouchboard::calibrateKeys() {
@@ -135,6 +135,4 @@ AutoTouchboard::AutoTouchboard() {
   pinMode(MUX_0, OUTPUT);
   pinMode(MUX_1, OUTPUT);
   pinMode(MUX_2, OUTPUT);
-  
-  calibrateKeys();
 }

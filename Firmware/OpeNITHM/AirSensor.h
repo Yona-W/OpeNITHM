@@ -20,7 +20,7 @@
 
 #include <FastLED.h>
 
-#define AIR_LED_DELAY 100
+#define AIR_LED_DELAY 125
 #define AIR_INPUT_DETECTION 0.90
 #define CALIBRATION_SAMPLES 200
 #define SKIP_SAMPLES 40

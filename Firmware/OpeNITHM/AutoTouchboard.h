@@ -29,7 +29,7 @@ class AutoTouchboard {
   private:
     // these will be tunable / need to be experimented with
 #if NUM_SENSORS == 32
-    int deltaThreshold = 6;
+    int deltaThreshold = 5;
     double releaseThreshold = 0.8;
 #else
     int deltaThreshold = 6;
